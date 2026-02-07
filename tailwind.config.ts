@@ -86,6 +86,8 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        heading: ["Fahkwang", "sans-serif"],
+        body: ["Montserrat", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
