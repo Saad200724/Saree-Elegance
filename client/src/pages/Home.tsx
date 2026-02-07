@@ -51,7 +51,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Category 1 */}
-            <Link href="/shop?category=Saree" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
+            <Link href="/sarees" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
               {/* Unsplash: Indian woman in red saree */}
               <img src="https://images.unsplash.com/photo-1583391733958-d023e669968e?w=800&auto=format&fit=crop" alt="Sarees" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
@@ -62,7 +62,7 @@ export default function Home() {
             </Link>
 
             {/* Category 2 */}
-            <Link href="/shop?category=Lehenga" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
+            <Link href="/lehengas" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
                {/* Unsplash: detailed embroidery fabric */}
               <img src="https://images.unsplash.com/photo-1595995057056-b040d7c7eb98?w=800&auto=format&fit=crop" alt="Lehengas" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
@@ -73,7 +73,7 @@ export default function Home() {
             </Link>
 
             {/* Category 3 */}
-            <Link href="/shop?category=Pakistani Dress" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer md:col-span-1">
+            <Link href="/pakistani-dresses" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer md:col-span-1">
                {/* Unsplash: fashion model dress */}
               <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop" alt="Pakistani Dress" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
