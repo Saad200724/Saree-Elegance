@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="inline-block group">
               <span className="font-heading text-2xl font-bold tracking-tight text-primary">
-                PURNIMA
+                ELEGANCE
               </span>
               <span className="block font-body text-xs tracking-[0.2em] text-muted-foreground uppercase mt-1">
                 Sarees
@@ -73,7 +73,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-xs">© 2026 Purnima Sarees. Powered by <a href="http://znforge.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">ZnForge</a></p>
+          <p className="text-gray-400 text-xs">© 2026 ELEGANCESarees. Powered by <a href="http://znforge.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">ZnForge</a></p>
           <div className="flex gap-4">
              {/* Payment icons could go here */}
           </div>

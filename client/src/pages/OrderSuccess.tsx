@@ -14,7 +14,7 @@ export default function OrderSuccess() {
         </div>
         <h1 className="font-heading text-4xl font-bold text-gray-900 mb-4">Order Placed Successfully!</h1>
         <p className="text-gray-500 max-w-md mb-8">
-          Thank you for shopping with Purnima Sarees. We have received your order and will begin processing it shortly.
+          Thank you for shopping with ELEGANCESarees. We have received your order and will begin processing it shortly.
         </p>
         <div className="flex gap-4">
           <Button asChild className="bg-primary hover:bg-primary/90">
