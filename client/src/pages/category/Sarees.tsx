@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
-import bannerImg from "@assets/images/banner.jpg";
+import bannerImg from "@/assets/images/banner.jpg";
 
 export default function Sarees() {
   const { data: products, isLoading } = useProducts({ category: "Saree" });

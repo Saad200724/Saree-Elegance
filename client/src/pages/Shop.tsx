@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
-import bannerImg from "@assets/images/banner.jpg";
+import bannerImg from "@/assets/images/banner.jpg";
 
 export default function Shop() {
   const [category, setCategory] = useState<string>("");
