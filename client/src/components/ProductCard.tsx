@@ -32,7 +32,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img 
             src={product.imageUrl} 
             alt={product.name}
-            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-contain object-center bg-white transition-transform duration-700 group-hover:scale-105"
           />
           
           {/* Quick Add Overlay */}
