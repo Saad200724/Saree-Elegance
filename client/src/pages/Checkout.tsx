@@ -150,7 +150,7 @@ export default function Checkout() {
                     size="lg" 
                     className="w-full bg-accent hover:bg-accent/90 mt-4"
                   >
-                    {createOrder.isPending ? "Processing..." : `Pay $${total.toFixed(2)}`}
+                    {createOrder.isPending ? "Processing..." : `Pay ৳${total.toLocaleString()}`}
                   </Button>
                </form>
              </Form>
@@ -169,7 +169,7 @@ export default function Checkout() {
                      <div>
                        <p className="font-medium text-sm text-gray-900">{item.product.name}</p>
                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                       <p className="text-sm font-semibold">${Number(item.product.price).toFixed(2)}</p>
+                       <p className="text-sm font-semibold">৳{Number(item.product.price).toLocaleString()}</p>
                      </div>
                    </div>
                  ))}
@@ -178,15 +178,15 @@ export default function Checkout() {
                <div className="border-t border-gray-100 mt-6 pt-4 space-y-2">
                  <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>৳{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>৳{shipping.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>৳{total.toLocaleString()}</span>
                   </div>
                </div>
             </div>

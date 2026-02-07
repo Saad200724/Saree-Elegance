@@ -48,7 +48,7 @@ export default function Cart() {
                   <div className="flex-1">
                     <h3 className="font-heading font-semibold text-gray-900">{item.product.name}</h3>
                     <p className="text-sm text-gray-500 mb-2">{item.product.category}</p>
-                    <p className="font-medium text-gray-900">${Number(item.product.price).toFixed(2)}</p>
+                    <p className="font-medium text-gray-900">৳{Number(item.product.price).toLocaleString()}</p>
                   </div>
 
                   <div className="flex items-center gap-4">
@@ -89,15 +89,15 @@ export default function Cart() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>৳{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                    <span>{shipping === 0 ? "Free" : `৳${shipping.toLocaleString()}`}</span>
                   </div>
                   <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900 text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>৳{total.toLocaleString()}</span>
                   </div>
                 </div>
 

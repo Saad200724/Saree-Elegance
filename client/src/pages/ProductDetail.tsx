@@ -73,9 +73,9 @@ export default function ProductDetail() {
             </div>
 
             <div className="flex items-baseline gap-4 mb-8">
-              <span className="text-3xl font-bold text-gray-900">${Number(product.price).toFixed(2)}</span>
+              <span className="text-3xl font-bold text-gray-900">৳{Number(product.price).toLocaleString()}</span>
               {product.originalPrice && (
-                <span className="text-xl text-gray-400 line-through">${Number(product.originalPrice).toFixed(2)}</span>
+                <span className="text-xl text-gray-400 line-through">৳{Number(product.originalPrice).toLocaleString()}</span>
               )}
             </div>
 

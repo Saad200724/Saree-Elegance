@@ -43,7 +43,7 @@ export default function Home() {
             className="max-w-2xl text-white space-y-6"
           >
             <span className="inline-block px-3 py-1 border border-white/30 rounded-full text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
-              New Collection 2025
+              New Collection 2026
             </span>
             <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight">
               Elegance Woven <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">In Every Thread</span>
@@ -152,7 +152,7 @@ export default function Home() {
                 <Truck className="w-6 h-6" />
               </div>
               <h3 className="font-heading font-bold text-lg mb-2">Free Shipping</h3>
-              <p className="text-gray-500 text-sm">On all orders over $100 across the country</p>
+              <p className="text-gray-500 text-sm">On all orders over ৳10,000 across the country</p>
             </div>
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 bg-blue-50 text-accent rounded-full flex items-center justify-center mb-4">

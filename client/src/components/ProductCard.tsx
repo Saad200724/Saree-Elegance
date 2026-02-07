@@ -62,11 +62,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           </h3>
           <div className="flex items-center gap-2">
             <span className="font-bold text-gray-900">
-              ${Number(product.price).toFixed(2)}
+              ৳{Number(product.price).toLocaleString()}
             </span>
             {product.originalPrice && (
               <span className="text-sm text-gray-400 line-through">
-                ${Number(product.originalPrice).toFixed(2)}
+                ৳{Number(product.originalPrice).toLocaleString()}
               </span>
             )}
           </div>

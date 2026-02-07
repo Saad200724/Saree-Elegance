@@ -174,7 +174,11 @@ async function seedDatabase() {
     ];
 
     for (const p of seedProducts) {
-      await db.insert(schema.products).values(p);
+      await db.insert(schema.products).values({
+        ...p,
+        price: p.price.toString(),
+        originalPrice: p.originalPrice ? p.originalPrice.toString() : null
+      });
     }
     console.log("Database seeded with products");
   }
