@@ -73,12 +73,12 @@ export default function Home() {
             </Link>
 
             {/* Category 3 */}
-            <Link href="/shop?category=Party Dress" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer md:col-span-1">
+            <Link href="/shop?category=Pakistani Dress" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer md:col-span-1">
                {/* Unsplash: fashion model dress */}
-              <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop" alt="Party Wear" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop" alt="Pakistani Dress" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-6 left-6 text-white">
-                <h3 className="font-heading text-2xl font-bold mb-2">Party Wear</h3>
+                <h3 className="font-heading text-2xl font-bold mb-2">Pakistani Dress</h3>
                 <span className="inline-flex items-center text-sm font-medium group-hover:underline">Shop Now <ArrowRight className="ml-2 w-4 h-4" /></span>
               </div>
             </Link>
