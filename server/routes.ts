@@ -141,7 +141,7 @@ async function seedDatabase() {
         description: "Heavy Vertical Embroidery & Diamond Border. Perfect for weddings.",
         price: 45000.00,
         originalPrice: 55000.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/06/IMG-20250524-WA0137-300x300.jpg",
+        imageUrl: "/images/lehenga_stock_1.jpg",
         category: "Lehenga",
         isNewArrival: true,
         stock: 5
@@ -150,26 +150,114 @@ async function seedDatabase() {
         name: "Net Zarkan Sequence Lehenga",
         description: "Pastel Floral Elegance with intricate detailing.",
         price: 32000.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/06/IMG-20250524-WA0168-300x300.jpg",
+        imageUrl: "/images/lehenga_stock_2.jpg",
         category: "Lehenga",
         isNewArrival: true,
         stock: 8
       },
       {
+        name: "Royal Red Bridal Lehenga",
+        description: "Exquisite craftsmanship with golden thread work.",
+        price: 38000.00,
+        imageUrl: "/images/lehenga_stock_3.jpg",
+        category: "Lehenga",
+        stock: 10
+      },
+      {
+        name: "Designer Floral Lehenga",
+        description: "Modern design with traditional touch for wedding guests.",
+        price: 28000.00,
+        imageUrl: "/images/lehenga_stock_4.jpg",
+        category: "Lehenga",
+        stock: 12
+      },
+      {
+        name: "Silk Embroidered Lehenga",
+        description: "Rich silk fabric with heavy embroidery work.",
+        price: 35000.00,
+        imageUrl: "/images/lehenga_stock_5.jpg",
+        category: "Lehenga",
+        stock: 7
+      },
+      {
         name: "Banarasi Silk Saree",
         description: "Traditional red Banarasi saree with gold zari work.",
         price: 15000.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/saree-2.webp",
+        imageUrl: "/images/saree_stock_1.jpg",
         category: "Saree",
         stock: 20
+      },
+      {
+        name: "Kanjivaram Pure Silk",
+        description: "Authentic Kanjivaram with temple border design.",
+        price: 18500.00,
+        imageUrl: "/images/saree_stock_2.jpg",
+        category: "Saree",
+        stock: 15
+      },
+      {
+        name: "Chiffon Designer Saree",
+        description: "Lightweight and elegant for evening parties.",
+        price: 7500.00,
+        imageUrl: "/images/saree_stock_3.jpg",
+        category: "Saree",
+        stock: 25
+      },
+      {
+        name: "Cotton Handloom Saree",
+        description: "Pure cotton comfort with traditional prints.",
+        price: 3500.00,
+        imageUrl: "/images/saree_stock_4.jpg",
+        category: "Saree",
+        stock: 30
+      },
+      {
+        name: "Tussar Silk Saree",
+        description: "Natural silk texture with artistic hand painting.",
+        price: 12000.00,
+        imageUrl: "/images/saree_stock_5.jpg",
+        category: "Saree",
+        stock: 18
       },
       {
         name: "Georgette Party Wear",
         description: "Elegant party wear saree with stone embellishments.",
         price: 8500.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/party-dress.webp",
+        imageUrl: "/images/party_stock_1.jpg",
         category: "Party Dress",
         stock: 15
+      },
+      {
+        name: "Modern Fusion Gown",
+        description: "A perfect blend of ethnic and contemporary styles.",
+        price: 9500.00,
+        imageUrl: "/images/party_stock_2.jpg",
+        category: "Party Dress",
+        stock: 12
+      },
+      {
+        name: "Embroidered Anarkali",
+        description: "Stunning floor-length Anarkali with intricate sequins.",
+        price: 11000.00,
+        imageUrl: "/images/party_stock_3.jpg",
+        category: "Party Dress",
+        stock: 10
+      },
+      {
+        name: "Floral Organza Saree",
+        description: "Trendy organza fabric with vibrant floral prints.",
+        price: 6500.00,
+        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/saree-2.webp",
+        category: "Saree",
+        stock: 20
+      },
+      {
+        name: "Net Sequined Saree",
+        description: "Glimmering net saree for glamorous night events.",
+        price: 8900.00,
+        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/party-dress.webp",
+        category: "Saree",
+        stock: 14
       }
     ];
 
