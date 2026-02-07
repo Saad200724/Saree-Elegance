@@ -27,7 +27,7 @@ export default function Navbar() {
     { href: "/shop", label: "Shop" },
     { href: "/sarees", label: "Sarees" },
     { href: "/lehengas", label: "Lehengas" },
-    { href: "/pakistani-dresses", label: "Pakistani Dress" },
+    { href: "/shop?category=Pakistani Dress", label: "Pakistani Dress" },
   ];
 
   return (

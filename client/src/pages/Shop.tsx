@@ -76,6 +76,7 @@ export default function Shop() {
                 <SelectItem value="Lehenga">Lehengas</SelectItem>
                 <SelectItem value="Three Piece">Three Piece</SelectItem>
                 <SelectItem value="Party Dress">Party Dress</SelectItem>
+                <SelectItem value="Pakistani Dress">Pakistani Dress</SelectItem>
               </SelectContent>
             </Select>
           </div>
