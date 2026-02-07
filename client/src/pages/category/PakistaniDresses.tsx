@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import { motion } from "framer-motion";
-import pakistaniBanner from "@assets/pakistani_1770473752854.png";
+import bannerImg from "@assets/images/banner.jpg";
 
 export default function PakistaniDresses() {
   const { data: products, isLoading } = useProducts({ category: "Pakistani Dress" });
@@ -14,7 +14,7 @@ export default function PakistaniDresses() {
       <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${pakistaniBanner})` }}
+          style={{ backgroundImage: `url(${bannerImg})` }}
         >
           <div className="absolute inset-0 bg-black/40" />
         </div>

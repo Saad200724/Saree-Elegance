@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
+import bannerImg from "@assets/images/banner.jpg";
 
 export default function Shop() {
   const [category, setCategory] = useState<string>("");
@@ -27,15 +28,21 @@ export default function Shop() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-heading text-4xl font-bold text-gray-900 mb-4">Our Collection</h1>
-          <p className="text-gray-500 max-w-2xl mx-auto">
+      {/* Header Banner */}
+      <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${bannerImg})` }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+        <div className="relative h-full max-w-7xl mx-auto px-4 flex flex-col justify-center items-center text-white text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 font-heading">Our Collection</h1>
+          <p className="text-lg max-w-2xl opacity-90">
             Browse our extensive collection of premium ethnic wear, suitable for every celebration.
           </p>
         </div>
-      </div>
+      </section>
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         

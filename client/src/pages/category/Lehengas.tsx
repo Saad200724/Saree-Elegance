@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
-import lahengaBanner from "@assets/lahenga_1770473759846.png";
+import bannerImg from "@assets/images/banner.jpg";
 
 export default function Lehengas() {
   const { data: products, isLoading } = useProducts({ category: "Lehenga" });
@@ -13,7 +13,7 @@ export default function Lehengas() {
       <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${lahengaBanner})` }}
+          style={{ backgroundImage: `url(${bannerImg})` }}
         >
           <div className="absolute inset-0 bg-black/40" />
         </div>

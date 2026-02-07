@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
-import sareeBanner from "@assets/saree_1770473752861.png";
+import bannerImg from "@assets/images/banner.jpg";
 
 export default function Sarees() {
   const { data: products, isLoading } = useProducts({ category: "Saree" });
@@ -13,7 +13,7 @@ export default function Sarees() {
       <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${sareeBanner})` }}
+          style={{ backgroundImage: `url(${bannerImg})` }}
         >
           <div className="absolute inset-0 bg-black/40" />
         </div>
