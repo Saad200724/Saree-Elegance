@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { useProducts } from "@/hooks/use-products";
 import { ArrowRight, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import sareeBanner from "@assets/saree-banner_1770467409528.png";
 
 export default function Home() {
   const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
@@ -31,8 +32,10 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative h-[85vh] w-full overflow-hidden bg-gray-900">
-        {/* Unsplash hero: elegant silk saree fabric texture dark moody */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1610189012906-478338270e6b?q=80&w=2500&auto=format&fit=crop')] bg-cover bg-center opacity-60"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-60"
+          style={{ backgroundImage: `url(${sareeBanner})` }}
+        ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
