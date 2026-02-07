@@ -13,7 +13,7 @@ import pakistaniCategory from "@/assets/images/pakistani-category.png";
 export default function Home() {
   const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
   
-  const sareeBanner = "/images/saree-banner_1770467409528.png";
+  const sareeBanner = "/images/hero.png";
 
   // Animation variants
   const fadeInUp = {
@@ -35,7 +35,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative aspect-[3/1] w-full overflow-hidden bg-gray-900">
+      <section className="relative aspect-[2/1] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${sareeBanner})` }}
