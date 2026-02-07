@@ -6,10 +6,10 @@ import { Link } from "wouter";
 import { useProducts } from "@/hooks/use-products";
 import { ArrowRight, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
-import sareeBanner from "@assets/saree-banner_1770467409528.png";
-
 export default function Home() {
   const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
+  
+  const sareeBanner = "/images/saree-banner_1770467409528.png";
 
   // Animation variants
   const fadeInUp = {
@@ -33,29 +33,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[85vh] w-full overflow-hidden bg-gray-900">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-60"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${sareeBanner})` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-2xl text-white space-y-6"
-          >
-            <span className="inline-block px-3 py-1 border border-white/30 rounded-full text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
-              New Collection 2026
-            </span>
-            <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight">
-              Elegance Woven
-            </h1>
-            <p className="text-lg text-gray-200 md:max-w-lg leading-relaxed">
-              Discover our exclusive range of handcrafted sarees, designed to make every occasion unforgettable.
-            </p>
-
-          </motion.div>
         </div>
       </section>
 
