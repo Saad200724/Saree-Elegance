@@ -134,130 +134,113 @@ export async function registerRoutes(
 async function seedDatabase() {
   const products = await storage.getProducts();
   if (products.length === 0) {
-    // Insert dummy products
+    // Insert dummy products using attached assets
     const seedProducts = [
       {
-        name: "Velvet Zarkan Bridal Lehenga",
-        description: "Heavy Vertical Embroidery & Diamond Border. Perfect for weddings.",
+        name: "Bridal Lehenga Pink Floral",
+        description: "Heavy Embroidery & Diamond Border Bridal Lehenga. Perfect for grand weddings.",
         price: 45000.00,
-        originalPrice: 55000.00,
-        imageUrl: "/images/lehenga_stock_1.jpg",
+        imageUrl: "/attached_assets/IMG-20250524-WA0015-300x300_1770468292705.jpg",
         category: "Lehenga",
         isNewArrival: true,
         stock: 5
       },
       {
-        name: "Net Zarkan Sequence Lehenga",
-        description: "Pastel Floral Elegance with intricate detailing.",
+        name: "Burberry Jarkan Maroon Lehenga",
+        description: "Deep maroon velvet lehenga with Burberry Jarkan work.",
         price: 32000.00,
-        imageUrl: "/images/lehenga_stock_2.jpg",
+        imageUrl: "/attached_assets/IMG-20250524-WA0068-300x300_1770468292707.jpg",
         category: "Lehenga",
         isNewArrival: true,
         stock: 8
       },
       {
-        name: "Royal Red Bridal Lehenga",
-        description: "Exquisite craftsmanship with golden thread work.",
-        price: 38000.00,
-        imageUrl: "/images/lehenga_stock_3.jpg",
-        category: "Lehenga",
+        name: "Georgette Dupatta Maroon Suite",
+        description: "Elegant maroon georgette dupatta with intricate embroidery.",
+        price: 2250.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0070-300x300_1770468292716.jpg",
+        category: "Saree",
         stock: 10
       },
       {
-        name: "Designer Floral Lehenga",
-        description: "Modern design with traditional touch for wedding guests.",
-        price: 28000.00,
-        imageUrl: "/images/lehenga_stock_4.jpg",
-        category: "Lehenga",
+        name: "Georgette Jarkan Maroon Saree",
+        description: "Beautiful maroon saree with georgette jarkan work.",
+        price: 2295.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0072-300x300_1770468292718.jpg",
+        category: "Saree",
         stock: 12
       },
       {
-        name: "Silk Embroidered Lehenga",
-        description: "Rich silk fabric with heavy embroidery work.",
-        price: 35000.00,
-        imageUrl: "/images/lehenga_stock_5.jpg",
-        category: "Lehenga",
+        name: "Georgette Jarkan Designer Saree",
+        description: "Premium maroon georgette jarkan designer saree.",
+        price: 2495.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0075-300x300_1770468292725.jpg",
+        category: "Saree",
         stock: 7
       },
       {
-        name: "Banarasi Silk Saree",
-        description: "Traditional red Banarasi saree with gold zari work.",
-        price: 15000.00,
-        imageUrl: "/images/saree_stock_1.jpg",
+        name: "Heavy Work Georgette Jarkan",
+        description: "Rich maroon georgette saree with heavy jarkan embroidery.",
+        price: 2800.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0076-300x300_1770468292729.jpg",
         category: "Saree",
         stock: 20
       },
       {
-        name: "Kanjivaram Pure Silk",
-        description: "Authentic Kanjivaram with temple border design.",
-        price: 18500.00,
-        imageUrl: "/images/saree_stock_2.jpg",
+        name: "Royal Maroon Jarkan Saree",
+        description: "Exquisite royal maroon saree with detailed jarkan work.",
+        price: 3500.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0077-300x300_1770468292734.jpg",
         category: "Saree",
         stock: 15
       },
       {
-        name: "Chiffon Designer Saree",
-        description: "Lightweight and elegant for evening parties.",
-        price: 7500.00,
-        imageUrl: "/images/saree_stock_3.jpg",
-        category: "Saree",
+        name: "Bridal White Lehenga",
+        description: "Stunning white bridal lehenga with heavy traditional work.",
+        price: 38000.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0111-300x300_1770468292737.jpg",
+        category: "Lehenga",
         stock: 25
       },
       {
-        name: "Cotton Handloom Saree",
-        description: "Pure cotton comfort with traditional prints.",
-        price: 3500.00,
-        imageUrl: "/images/saree_stock_4.jpg",
-        category: "Saree",
+        name: "Net Zarkan Arpita Blue Lehenga",
+        description: "Beautiful blue net lehenga with Zarkan Arpita work.",
+        price: 28500.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0116-300x300_1770468292740.jpg",
+        category: "Lehenga",
         stock: 30
       },
       {
-        name: "Tussar Silk Saree",
-        description: "Natural silk texture with artistic hand painting.",
-        price: 12000.00,
-        imageUrl: "/images/saree_stock_5.jpg",
-        category: "Saree",
+        name: "Net Zarkan Aneri Purple Lehenga",
+        description: "Elegant purple net lehenga with Zarkan Aneri embroidery.",
+        price: 29000.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0123-300x300_1770468292743.jpg",
+        category: "Lehenga",
         stock: 18
       },
       {
-        name: "Georgette Party Wear",
-        description: "Elegant party wear saree with stone embellishments.",
-        price: 8500.00,
-        imageUrl: "/images/party_stock_1.jpg",
-        category: "Party Dress",
+        name: "Sequence Zarkan Shivangi Pink",
+        description: "Soft pink lehenga with sequence and Zarkan Shivangi work.",
+        price: 31000.00,
+        imageUrl: "/attached_assets/IMG-20250524-WA0168-300x300_1770468292753.jpg",
+        category: "Lehenga",
         stock: 15
       },
       {
-        name: "Modern Fusion Gown",
-        description: "A perfect blend of ethnic and contemporary styles.",
-        price: 9500.00,
-        imageUrl: "/images/party_stock_2.jpg",
-        category: "Party Dress",
+        name: "Traditional Maroon Saree",
+        description: "A timeless traditional maroon saree for elegant look.",
+        price: 8500.00,
+        imageUrl: "/attached_assets/saree-1_1770468292757.webp",
+        category: "Saree",
         stock: 12
       },
       {
-        name: "Embroidered Anarkali",
-        description: "Stunning floor-length Anarkali with intricate sequins.",
-        price: 11000.00,
-        imageUrl: "/images/party_stock_3.jpg",
-        category: "Party Dress",
+        name: "Red Handcrafted Silk Saree",
+        description: "Premium red handcrafted silk saree with gold border.",
+        price: 12000.00,
+        imageUrl: "/attached_assets/saree-2_1770468292763.webp",
+        category: "Saree",
         stock: 10
-      },
-      {
-        name: "Floral Organza Saree",
-        description: "Trendy organza fabric with vibrant floral prints.",
-        price: 6500.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/saree-2.webp",
-        category: "Saree",
-        stock: 20
-      },
-      {
-        name: "Net Sequined Saree",
-        description: "Glimmering net saree for glamorous night events.",
-        price: 8900.00,
-        imageUrl: "https://purnimasareebd.com/wp-content/uploads/2025/05/party-dress.webp",
-        category: "Saree",
-        stock: 14
       }
     ];
 
@@ -265,7 +248,6 @@ async function seedDatabase() {
       await db.insert(schema.products).values({
         ...p,
         price: p.price.toString(),
-        originalPrice: p.originalPrice ? p.originalPrice.toString() : null
       });
     }
     console.log("Database seeded with products");

@@ -49,19 +49,12 @@ export default function Home() {
               New Collection 2026
             </span>
             <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight">
-              Elegance Woven <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">In Every Thread</span>
+              Elegance Woven
             </h1>
             <p className="text-lg text-gray-200 md:max-w-lg leading-relaxed">
               Discover our exclusive range of handcrafted sarees, designed to make every occasion unforgettable.
             </p>
-            <div className="pt-4 flex gap-4">
-              <Button asChild size="lg" className="bg-white text-gray-900 hover:bg-gray-100 rounded-sm font-medium px-8 h-12">
-                <Link href="/shop">Shop Collection</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10 rounded-sm font-medium px-8 h-12">
-                <Link href="/shop?category=Saree">View Sarees</Link>
-              </Button>
-            </div>
+
           </motion.div>
         </div>
       </section>

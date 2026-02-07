@@ -37,7 +37,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
             <span className="font-heading text-2xl font-bold tracking-tight text-primary group-hover:text-accent transition-colors">
-              PURNIMA
+              ELEGANCE
             </span>
             <span className="font-body text-xs tracking-[0.2em] text-muted-foreground uppercase mt-1">
               Sarees
