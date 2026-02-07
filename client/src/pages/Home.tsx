@@ -6,6 +6,10 @@ import { Link } from "wouter";
 import { useProducts } from "@/hooks/use-products";
 import { ArrowRight, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import sareeCategory from "@/assets/images/saree-category.png";
+import lehengaCategory from "@/assets/images/lehenga-category.png";
+import pakistaniCategory from "@/assets/images/pakistani-category.png";
+
 export default function Home() {
   const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
   
@@ -51,9 +55,8 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Category 1 */}
-            <Link href="/sarees" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
-              {/* Unsplash: Indian woman in red saree */}
-              <img src="https://images.unsplash.com/photo-1583391733958-d023e669968e?w=800&auto=format&fit=crop" alt="Sarees" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <Link href="/sarees" className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer">
+              <img src={sareeCategory} alt="Sarees" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-6 left-6 text-white">
                 <h3 className="font-heading text-2xl font-bold mb-2">Exquisite Sarees</h3>
@@ -62,9 +65,8 @@ export default function Home() {
             </Link>
 
             {/* Category 2 */}
-            <Link href="/lehengas" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer">
-               {/* Unsplash: detailed embroidery fabric */}
-              <img src="https://images.unsplash.com/photo-1595995057056-b040d7c7eb98?w=800&auto=format&fit=crop" alt="Lehengas" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <Link href="/lehengas" className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer">
+              <img src={lehengaCategory} alt="Lehengas" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-6 left-6 text-white">
                 <h3 className="font-heading text-2xl font-bold mb-2">Bridal Lehengas</h3>
@@ -73,9 +75,8 @@ export default function Home() {
             </Link>
 
             {/* Category 3 */}
-            <Link href="/pakistani-dresses" className="group relative h-96 rounded-xl overflow-hidden cursor-pointer md:col-span-1">
-               {/* Unsplash: fashion model dress */}
-              <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&auto=format&fit=crop" alt="Pakistani Dress" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <Link href="/pakistani-dresses" className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer md:col-span-1">
+              <img src={pakistaniCategory} alt="Pakistani Dress" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-6 left-6 text-white">
                 <h3 className="font-heading text-2xl font-bold mb-2">Pakistani Dress</h3>
