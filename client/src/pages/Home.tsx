@@ -35,7 +35,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[85vh] w-full overflow-hidden bg-gray-900">
+      <section className="relative aspect-[3/1] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${sareeBanner})` }}
