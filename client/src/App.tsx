@@ -15,11 +15,13 @@ import OrderSuccess from "@/pages/OrderSuccess";
 import Sarees from "@/pages/category/Sarees";
 import Lehengas from "@/pages/category/Lehengas";
 import PakistaniDresses from "@/pages/category/PakistaniDresses";
+import Auth from "@/pages/Auth";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
       <Route path="/shop" component={Shop} />
       <Route path="/sarees" component={Sarees} />
       <Route path="/lehengas" component={Lehengas} />
