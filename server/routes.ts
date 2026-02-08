@@ -225,22 +225,6 @@ async function seedDatabase() {
         imageUrl: "/images/IMG-20250524-WA0168-300x300_1770468292753.jpg",
         category: "Lehenga",
         stock: 15
-      },
-      {
-        name: "Traditional Maroon Saree",
-        description: "A timeless traditional maroon saree for elegant look.",
-        price: 8500.00,
-        imageUrl: "/images/saree-1_1770468292757.webp",
-        category: "Saree",
-        stock: 12
-      },
-      {
-        name: "Red Handcrafted Silk Saree",
-        description: "Premium red handcrafted silk saree with gold border.",
-        price: 12000.00,
-        imageUrl: "/images/saree-2_1770468292763.webp",
-        category: "Saree",
-        stock: 10
       }
     ];
 
