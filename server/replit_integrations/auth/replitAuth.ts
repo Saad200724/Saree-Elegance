@@ -28,14 +28,15 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "repl_secret",
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: false, // Force false for development preview
       maxAge: sessionTtl,
+      sameSite: "lax",
     },
   });
 }

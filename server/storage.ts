@@ -6,7 +6,7 @@ import {
   type CartItem, type InsertCartItem,
   type Order, type InsertOrder
 } from "@shared/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
 
 export interface IStorage extends IAuthStorage {
@@ -65,15 +65,19 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
 
   // Cart
   async getCartItems(userId?: string, sessionId?: string): Promise<(CartItem & { product: Product })[]> {
+    console.log('Fetching cart items for:', { userId, sessionId });
     const whereClause = userId 
       ? eq(cartItems.userId, userId)
       : sessionId 
         ? eq(cartItems.sessionId, sessionId)
         : null;
 
-    if (!whereClause) return [];
+    if (!whereClause) {
+      console.log('No where clause for cart fetch');
+      return [];
+    }
 
-    return await db.select({
+    const results = await db.select({
       id: cartItems.id,
       userId: cartItems.userId,
       sessionId: cartItems.sessionId,
@@ -84,22 +88,33 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
     })
     .from(cartItems)
     .innerJoin(products, eq(cartItems.productId, products.id))
-    .where(whereClause);
+    .where(
+      userId 
+        ? eq(cartItems.userId, userId)
+        : eq(cartItems.sessionId, sessionId!)
+    );
+
+    console.log('Cart items found:', results.length);
+    return results;
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
-    const query = db.select().from(cartItems);
+    console.log('Adding to cart:', item);
     
-    let whereClause;
-    if (item.userId) {
-      whereClause = sql`${cartItems.productId} = ${item.productId} AND ${cartItems.userId} = ${item.userId}`;
-    } else {
-      whereClause = sql`${cartItems.productId} = ${item.productId} AND ${cartItems.sessionId} = ${item.sessionId}`;
-    }
-
-    const [existing] = await query.where(whereClause);
+    // Check if the item already exists for this user/session
+    const [existing] = await db.select()
+      .from(cartItems)
+      .where(
+        and(
+          eq(cartItems.productId, item.productId),
+          item.userId 
+            ? eq(cartItems.userId, item.userId) 
+            : eq(cartItems.sessionId, item.sessionId!)
+        )
+      );
 
     if (existing) {
+      console.log('Found existing item, updating quantity:', existing.id);
       const [updated] = await db.update(cartItems)
         .set({ quantity: existing.quantity + (item.quantity || 1) })
         .where(eq(cartItems.id, existing.id))
@@ -107,6 +122,7 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
       return updated;
     }
 
+    console.log('Inserting new cart item');
     const [newItem] = await db.insert(cartItems).values(item).returning();
     return newItem;
   }

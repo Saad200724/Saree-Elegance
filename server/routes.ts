@@ -66,9 +66,9 @@ export async function registerRoutes(
       const item = await storage.addToCart({
         ...input,
         userId,
-        sessionId: userId ? undefined : sessionId,
+        sessionId,
       });
-      console.log('Item added to cart:', item);
+      console.log('Final item returned from storage:', item);
       res.status(201).json(item);
     } catch (err) {
       if (err instanceof z.ZodError) {
