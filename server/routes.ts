@@ -68,6 +68,7 @@ export async function registerRoutes(
         userId,
         sessionId: userId ? undefined : sessionId,
       });
+      console.log('Item added to cart:', item);
       res.status(201).json(item);
     } catch (err) {
       if (err instanceof z.ZodError) {

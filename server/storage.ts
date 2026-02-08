@@ -74,7 +74,12 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
     if (!whereClause) return [];
 
     return await db.select({
-      ...cartItems,
+      id: cartItems.id,
+      userId: cartItems.userId,
+      sessionId: cartItems.sessionId,
+      productId: cartItems.productId,
+      quantity: cartItems.quantity,
+      createdAt: cartItems.createdAt,
       product: products,
     })
     .from(cartItems)
@@ -83,8 +88,16 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
-    const [existing] = await db.select().from(cartItems)
-      .where(sql`${cartItems.productId} = ${item.productId} AND (${cartItems.userId} = ${item.userId ?? null} OR ${cartItems.sessionId} = ${item.sessionId ?? null})`);
+    const query = db.select().from(cartItems);
+    
+    let whereClause;
+    if (item.userId) {
+      whereClause = sql`${cartItems.productId} = ${item.productId} AND ${cartItems.userId} = ${item.userId}`;
+    } else {
+      whereClause = sql`${cartItems.productId} = ${item.productId} AND ${cartItems.sessionId} = ${item.sessionId}`;
+    }
+
+    const [existing] = await query.where(whereClause);
 
     if (existing) {
       const [updated] = await db.update(cartItems)
