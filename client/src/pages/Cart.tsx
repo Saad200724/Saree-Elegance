@@ -11,7 +11,7 @@ export default function Cart() {
   const updateItem = useUpdateCartItem();
 
   const subtotal = cartItems?.reduce((acc, item) => acc + (Number(item.product.price) * item.quantity), 0) || 0;
-  const shipping = subtotal > 100 ? 0 : 15;
+  const shipping = subtotal > 5000 ? 0 : 100;
   const total = subtotal + shipping;
 
   if (isLoading) return <div className="min-h-screen bg-gray-50"><Navbar /><div className="p-20 text-center">Loading cart...</div></div>;

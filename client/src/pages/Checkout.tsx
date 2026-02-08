@@ -32,7 +32,7 @@ export default function Checkout() {
   const [, setLocation] = useLocation();
 
   const subtotal = cartItems?.reduce((acc, item) => acc + (Number(item.product.price) * item.quantity), 0) || 0;
-  const shipping = subtotal > 100 ? 0 : 15;
+  const shipping = subtotal > 5000 ? 0 : 100;
   const total = subtotal + shipping;
 
   const form = useForm<CheckoutFormValues>({
