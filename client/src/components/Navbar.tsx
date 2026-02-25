@@ -85,10 +85,10 @@ export default function Navbar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-full">
-                      {user.photoURL ? (
+                      {user.profileImage ? (
                         <img
-                          src={user.photoURL}
-                          alt={user.displayName || "User"}
+                          src={user.profileImage}
+                          alt={user.name || "User"}
                           className="h-8 w-8 rounded-full object-cover border border-gray-200"
                         />
                       ) : (
@@ -99,7 +99,7 @@ export default function Navbar() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
+                        <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
                         <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                       </div>
                     </DropdownMenuLabel>
