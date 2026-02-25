@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import sareeCategory from "@/assets/images/saree-category.png";
 import lehengaCategory from "@/assets/images/lehenga-category.png";
 import pakistaniCategory from "@/assets/images/pakistani-category.png";
+import alponaBg from "@assets/Alpona_withoutbg_1771979242690.png";
 
 export default function Home() {
   const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
@@ -46,8 +47,16 @@ export default function Home() {
       </section>
 
       {/* Categories Grid */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div 
+          className="absolute top-0 left-0 w-64 h-64 opacity-10 pointer-events-none -translate-x-1/2 -translate-y-1/2 rotate-12"
+          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
+        />
+        <div 
+          className="absolute bottom-0 right-0 w-96 h-96 opacity-10 pointer-events-none translate-x-1/4 translate-y-1/4 -rotate-12"
+          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-4">Curated Categories</h2>
             <p className="text-gray-500 max-w-lg mx-auto">Explore our wide range of traditional and contemporary attire.</p>
@@ -123,8 +132,16 @@ export default function Home() {
       </section>
 
       {/* Features / Trust Badges */}
-      <section className="py-16 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white border-y border-gray-100 relative overflow-hidden">
+        <div 
+          className="absolute top-1/2 left-0 w-48 h-48 opacity-5 pointer-events-none -translate-x-1/2 -translate-y-1/2"
+          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
+        />
+        <div 
+          className="absolute top-1/2 right-0 w-48 h-48 opacity-5 pointer-events-none translate-x-1/2 -translate-y-1/2"
+          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 bg-blue-50 text-accent rounded-full flex items-center justify-center mb-4">

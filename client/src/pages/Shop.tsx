@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
 import bannerImg from "@/assets/images/banner.jpg";
+import alponaDesignHome from "@assets/Alpona_Design--home_1771979303957.png";
 
 export default function Shop() {
   const [category, setCategory] = useState<string>("");
@@ -25,7 +26,13 @@ export default function Shop() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div 
+      className="min-h-screen flex flex-col bg-gray-50 bg-fixed bg-no-repeat bg-right-bottom"
+      style={{ 
+        backgroundImage: `url(${alponaDesignHome})`,
+        backgroundSize: '40% auto',
+      }}
+    >
       <Navbar />
 
       {/* Header Banner */}
