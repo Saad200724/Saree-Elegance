@@ -30,8 +30,8 @@ export default function Shop() {
       className="min-h-screen flex flex-col bg-gray-50 bg-fixed bg-no-repeat bg-center"
       style={{ 
         backgroundImage: `url(${alponaDesignHome})`,
-        backgroundSize: 'cover',
-        backgroundBlendMode: 'overlay',
+        backgroundSize: '100% 100%',
+        backgroundAttachment: 'fixed',
       }}
     >
       <Navbar />
