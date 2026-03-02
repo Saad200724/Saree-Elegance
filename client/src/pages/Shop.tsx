@@ -27,10 +27,10 @@ export default function Shop() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col bg-gray-50 bg-fixed bg-no-repeat bg-right-bottom"
+      className="min-h-screen flex flex-col bg-gray-50 bg-fixed bg-no-repeat bg-center"
       style={{ 
         backgroundImage: `url(${alponaDesignHome})`,
-        backgroundSize: '40% auto',
+        backgroundSize: 'contain',
       }}
     >
       <Navbar />
