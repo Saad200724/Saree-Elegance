@@ -20,7 +20,7 @@ export default function Contact() {
           <div className="flex items-center gap-4 text-lg">
             <Facebook className="text-primary h-6 w-6" />
             <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="hover:underline text-primary font-medium">
-              Facebook
+              Facebook Page of চন্দ্রাবতী
             </a>
           </div>
         </div>

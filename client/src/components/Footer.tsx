@@ -31,9 +31,9 @@ export default function Footer() {
             <h3 className="font-heading font-semibold text-gray-900 mb-6">Shop</h3>
             <ul className="space-y-3">
               <li><Link href="/shop" className="text-gray-500 hover:text-accent text-sm transition-colors">All Products</Link></li>
-              <li><Link href="/shop?category=Saree" className="text-gray-500 hover:text-accent text-sm transition-colors">Sarees</Link></li>
-              <li><Link href="/shop?category=Lehenga" className="text-gray-500 hover:text-accent text-sm transition-colors">Lehengas</Link></li>
-              <li><Link href="/shop?category=Party Dress" className="text-gray-500 hover:text-accent text-sm transition-colors">Party Dresses</Link></li>
+              <li><Link href="/sarees" className="text-gray-500 hover:text-accent text-sm transition-colors">Sarees</Link></li>
+              <li><Link href="/lehengas" className="text-gray-500 hover:text-accent text-sm transition-colors">Lehengas</Link></li>
+              <li><Link href="/pakistani-dresses" className="text-gray-500 hover:text-accent text-sm transition-colors">Pakistani Dresses</Link></li>
             </ul>
           </div>
 
@@ -52,9 +52,10 @@ export default function Footer() {
           <div>
             <h3 className="font-heading font-semibold text-gray-900 mb-6">Connect</h3>
             <p className="text-gray-500 text-sm mb-4">Phone: 01805-108818</p>
-            <div className="flex gap-4">
-              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors">
-                <Facebook className="h-6 w-6" />
+            <div className="flex gap-4 pt-2">
+              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors flex items-center gap-2">
+                <Facebook className="h-5 w-5" />
+                <span className="text-sm font-medium">Facebook</span>
               </a>
             </div>
           </div>
