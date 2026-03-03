@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
 import bannerImg from "@/assets/images/banner.jpg";
-import alponaDesignHome from "@assets/Alpona_Design--home_1771979303957.png";
+import alponaDesignHome from "@/assets/images/Alpona_Design.png";
 
 export default function Shop() {
   const [category, setCategory] = useState<string>("");

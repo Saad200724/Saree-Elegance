@@ -3,13 +3,22 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useProducts } from "@/hooks/use-products";
 import bannerImg from "@/assets/images/banner.jpg";
+import alponaDesignHome from "@/assets/images/Alpona_Design.png";
 
 export default function Sarees() {
   const { data: products, isLoading } = useProducts({ category: "Saree" });
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div 
+      className="min-h-screen flex flex-col bg-gray-50 bg-fixed bg-no-repeat bg-center"
+      style={{ 
+        backgroundImage: `url(${alponaDesignHome})`,
+        backgroundSize: '100% 100%',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <Navbar />
+
       <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -38,6 +47,7 @@ export default function Sarees() {
           </div>
         )}
       </main>
+
       <Footer />
     </div>
   );
