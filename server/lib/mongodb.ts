@@ -1,31 +1,40 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || "mongodb+srv://saadbintofayel:Saad1234@chandrabati.byubzpi.mongodb.net/?appName=Chandrabati";
 
-if (!uri) {
-  console.warn("MONGODB_URI environment variable is not set. MongoDB connection will be skipped.");
-}
-
-export const client = uri ? new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-}) : null;
-
-export async function connectToMongoDB() {
-  if (!client) {
-    console.log("MongoDB client not configured (MONGODB_URI not set). Skipping connection.");
-    return null;
-  }
+export const connectToMongoDB = async () => {
   try {
-    await client.connect();
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    return client;
+    await mongoose.connect(uri);
+    console.log("Successfully connected to MongoDB via Mongoose");
   } catch (error) {
-    console.error("Failed to connect to MongoDB:", error);
-    throw error;
+    console.error("Error connecting to MongoDB:", error);
   }
-}
+};
+
+// Define Mongoose Product Schema matching Drizzle
+const ProductSchema: Schema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: String, required: true },
+  originalPrice: { type: String },
+  imageUrl: { type: String, required: true },
+  category: { type: String, required: true },
+  stock: { type: Number, default: 0 },
+  isNewArrival: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const MongoProduct = mongoose.models.Product || mongoose.model('Product', ProductSchema);
+
+// Define Review Schema
+const ReviewSchema: Schema = new Schema({
+  productId: { type: Number, required: true },
+  userId: { type: String },
+  reviewerName: { type: String, required: true },
+  rating: { type: Number, required: true },
+  comment: { type: String, required: true },
+  imageUrl: { type: String },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const MongoReview = mongoose.models.Review || mongoose.model('Review', ReviewSchema);

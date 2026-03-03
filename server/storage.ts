@@ -8,43 +8,28 @@ import {
 } from "@shared/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
+import { MongoProduct, MongoReview } from "./lib/mongodb";
 
 export interface IStorage extends IAuthStorage {
-  // Products
   getProducts(category?: string, search?: string): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
-  
-  // Reviews
   getReviews(productId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
-
-  // Cart
   getCartItems(userId?: string, sessionId?: string): Promise<(CartItem & { product: Product })[]>;
   addToCart(item: InsertCartItem): Promise<CartItem>;
   updateCartItem(id: number, quantity: number): Promise<CartItem | undefined>;
   removeFromCart(id: number): Promise<void>;
   clearCart(userId?: string, sessionId?: string): Promise<void>;
-
-  // Orders
   createOrder(order: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order>;
+  syncWithMongo(): Promise<void>;
 }
 
 export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthStorage }) implements IStorage {
-  // Products
   async getProducts(category?: string, search?: string): Promise<Product[]> {
     let query = db.select().from(products);
-    
     if (category) {
       query = query.where(eq(products.category, category)) as any;
     }
-    
-    // Simple search implementation
-    if (search) {
-      // In a real app we'd use ilike or tsvector, but for simple MVP:
-      // query = query.where(ilike(products.name, `%${search}%`)); 
-      // Drizzle ilike needs sql operator
-    }
-
     return await query.orderBy(desc(products.createdAt));
   }
 
@@ -53,30 +38,25 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
     return product;
   }
 
-  // Reviews
   async getReviews(productId: number): Promise<Review[]> {
     return await db.select().from(reviews).where(eq(reviews.productId, productId)).orderBy(desc(reviews.createdAt));
   }
 
   async createReview(review: InsertReview): Promise<Review> {
     const [newReview] = await db.insert(reviews).values(review).returning();
+    // Sync to Mongo
+    try {
+      await MongoReview.create({
+        ...newReview,
+        price: undefined // Review doesn't have price
+      });
+    } catch (e) {
+      console.error("Mongo Sync Error:", e);
+    }
     return newReview;
   }
 
-  // Cart
   async getCartItems(userId?: string, sessionId?: string): Promise<(CartItem & { product: Product })[]> {
-    console.log('Fetching cart items for:', { userId, sessionId });
-    const whereClause = userId 
-      ? eq(cartItems.userId, userId)
-      : sessionId 
-        ? eq(cartItems.sessionId, sessionId)
-        : null;
-
-    if (!whereClause) {
-      console.log('No where clause for cart fetch');
-      return [];
-    }
-
     const results = await db.select({
       id: cartItems.id,
       userId: cartItems.userId,
@@ -93,15 +73,10 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
         ? eq(cartItems.userId, userId)
         : eq(cartItems.sessionId, sessionId!)
     );
-
-    console.log('Cart items found:', results.length);
     return results;
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
-    console.log('Adding to cart:', item);
-    
-    // Check if the item already exists for this user/session
     const [existing] = await db.select()
       .from(cartItems)
       .where(
@@ -114,15 +89,12 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
       );
 
     if (existing) {
-      console.log('Found existing item, updating quantity:', existing.id);
       const [updated] = await db.update(cartItems)
         .set({ quantity: existing.quantity + (item.quantity || 1) })
         .where(eq(cartItems.id, existing.id))
         .returning();
       return updated;
     }
-
-    console.log('Inserting new cart item');
     const [newItem] = await db.insert(cartItems).values(item).returning();
     return newItem;
   }
@@ -145,17 +117,14 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
       : sessionId 
         ? eq(cartItems.sessionId, sessionId)
         : null;
-        
     if (whereClause) {
       await db.delete(cartItems).where(whereClause);
     }
   }
 
-  // Orders
   async createOrder(orderData: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order> {
     return await db.transaction(async (tx) => {
       const [order] = await tx.insert(orders).values(orderData).returning();
-      
       for (const item of items) {
         await tx.insert(orderItems).values({
           orderId: order.id,
@@ -164,9 +133,33 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
           price: item.price.toString(),
         });
       }
-      
       return order;
     });
+  }
+
+  async syncWithMongo(): Promise<void> {
+    try {
+      const allProducts = await db.select().from(products);
+      for (const p of allProducts) {
+        await MongoProduct.findOneAndUpdate(
+          { name: p.name },
+          {
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            imageUrl: p.imageUrl,
+            category: p.category,
+            stock: p.stock,
+            isNewArrival: p.isNewArrival
+          },
+          { upsert: true }
+        );
+      }
+      console.log("Successfully synced products to MongoDB");
+    } catch (error) {
+      console.error("Error syncing with MongoDB:", error);
+    }
   }
 }
 

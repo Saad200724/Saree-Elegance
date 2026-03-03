@@ -66,6 +66,14 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
+  // Sync products with MongoDB on startup
+  try {
+    const { storage } = await import("./storage");
+    await storage.syncWithMongo();
+  } catch (e) {
+    console.error("Failed to initial sync with Mongo:", e);
+  }
+
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
