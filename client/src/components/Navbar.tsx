@@ -166,11 +166,11 @@ export default function Navbar() {
           <span className="text-[10px] font-medium">Categories</span>
         </Link>
         <div className="relative -mt-8">
-          <div className="bg-white rounded-full p-1 border border-gray-100 shadow-lg">
+          <Link href="/" className="bg-white rounded-full p-1 border border-gray-100 shadow-lg">
              <div className="bg-primary p-3 rounded-full">
                <img src="/logo.png" alt="Home" className="h-6 w-6 object-contain invert" />
              </div>
-          </div>
+          </Link>
         </div>
         <Link href="/auth" className={`flex flex-col items-center gap-1 ${location === "/auth" ? "text-accent" : "text-gray-500"}`}>
           <User className="h-5 w-5" />
@@ -178,7 +178,7 @@ export default function Navbar() {
         </Link>
         <Link href="/contact" className={`flex flex-col items-center gap-1 ${location === "/contact" ? "text-accent" : "text-gray-500"}`}>
           <MessageCircle className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Chat</span>
+          <span className="text-[10px] font-medium">Contact</span>
         </Link>
       </div>
     </>
