@@ -36,13 +36,16 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-            <span className="font-heading text-2xl font-bold tracking-tight text-primary group-hover:text-accent transition-colors">
-              ELEGANCE
-            </span>
-            <span className="font-body text-xs tracking-[0.2em] text-muted-foreground uppercase mt-1">
-              Sarees
-            </span>
+          <Link href="/" className="flex-shrink-0 flex items-center gap-3 group">
+            <img src="/logo.png" alt="চন্দ্রাবতী" className="h-12 w-12 object-contain" />
+            <div className="flex flex-col">
+              <span className="font-heading text-2xl font-bold tracking-tight text-primary group-hover:text-accent transition-colors leading-none">
+                চন্দ্রাবতী
+              </span>
+              <span className="font-body text-[10px] tracking-[0.1em] text-muted-foreground uppercase mt-1 leading-none">
+                Sarees That Define You
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}

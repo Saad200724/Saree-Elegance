@@ -12,7 +12,7 @@ export default function AuthPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
-            Welcome to ELEGANCE
+            Welcome to চন্দ্রাবতী
           </CardTitle>
           <p className="text-center text-muted-foreground">
             Please sign in to continue to your account
