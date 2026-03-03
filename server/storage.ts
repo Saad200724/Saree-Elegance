@@ -6,8 +6,9 @@ import {
   type CartItem, type InsertCartItem,
   type Order, type InsertOrder
 } from "@shared/schema";
+import mongoose from "mongoose";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { MongoProduct, MongoReview, MongoUser } from "./lib/mongodb";
+import { MongoProduct, MongoReview, MongoUser, connectToMongoDB } from "./lib/mongodb";
 import { type UpsertUser, type User } from "@shared/models/auth";
 
 export interface IStorage {
@@ -43,6 +44,7 @@ export class DatabaseStorage implements IStorage {
     const [newProduct] = await db.insert(products).values(product).returning();
     // Sync to Mongo
     try {
+      await connectToMongoDB();
       await MongoProduct.create({
         name: newProduct.name,
         description: newProduct.description,
@@ -65,6 +67,7 @@ export class DatabaseStorage implements IStorage {
     if (updated) {
       // Sync to Mongo
       try {
+        await connectToMongoDB();
         await MongoProduct.findOneAndUpdate(
           { name: updated.name },
           {
@@ -92,6 +95,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(products).where(eq(products.id, id));
     if (product) {
       try {
+        await connectToMongoDB();
         await MongoProduct.deleteOne({ name: product.name });
         console.log(`Deleted product ${product.name} from MongoDB`);
       } catch (e) {
@@ -253,6 +257,23 @@ export class DatabaseStorage implements IStorage {
 
   async syncWithMongo(): Promise<void> {
     try {
+      await connectToMongoDB();
+      
+      // Wait for connection to be fully established if it's currently connecting
+      if (mongoose.connection.readyState === 2) {
+        await new Promise((resolve) => {
+          const check = () => {
+            if (mongoose.connection.readyState === 1) resolve(true);
+            else setTimeout(check, 100);
+          };
+          check();
+        });
+      }
+
+      if (mongoose.connection.readyState !== 1) {
+        console.error("MongoDB not ready for sync after waiting. State:", mongoose.connection.readyState);
+        return;
+      }
       console.log("Starting MongoDB sync...");
       const allProducts = await db.select().from(products);
       console.log(`Found ${allProducts.length} products to sync`);

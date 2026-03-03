@@ -10,14 +10,23 @@ if (!uri) {
 }
 
 export const connectToMongoDB = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  
   try {
+    console.log("Attempting to connect to MongoDB Atlas...");
+    // Removing some restrictive options to see if it helps with the connection
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 45000, 
+      connectTimeoutMS: 45000,
+      socketTimeoutMS: 60000,
     });
-    console.log("Successfully connected to MongoDB via Mongoose");
+    console.log("Successfully connected to MongoDB Atlas via Mongoose");
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    console.error("CRITICAL: MongoDB Connection Failed!", error);
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+      console.error("Error Name:", error.name);
+    }
   }
 };
 
@@ -31,6 +40,8 @@ const ProductSchema: Schema = new Schema({
   stock: { type: Number, default: 0 },
   isNewArrival: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
+}, {
+  bufferCommands: false // Disable buffering
 });
 
 export const MongoProduct = mongoose.models.Product || mongoose.model('Product', ProductSchema);
