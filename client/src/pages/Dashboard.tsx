@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useOrders } from "@/hooks/use-orders";
 import { Order, Product } from "@shared/routes";
@@ -55,6 +56,7 @@ export default function Dashboard() {
                             <p className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
                           </div>
                         </div>
+                        <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <StatusBadge status={order.status} />
                             <p className="text-lg font-bold text-gray-900 ml-4">৳{Number(order.totalAmount).toLocaleString()}</p>
@@ -69,7 +71,7 @@ export default function Dashboard() {
                                 win.document.write(`
                                   <html>
                                     <head>
-                                      <title>Invoice - ${order.id}</title>
+                                      <title>Invoice - \${order.id}</title>
                                       <style>
                                         body { font-family: sans-serif; padding: 40px; color: #333; }
                                         .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; }
@@ -84,29 +86,29 @@ export default function Dashboard() {
                                     <body>
                                       <div class="invoice-box">
                                         <div class="header">
-                                          <div><div class="logo">LOGO</div><p>Order ID: #${order.id}</p></div>
-                                          <div style="text-align: right"><h2>INVOICE</h2><p>${new Date(order.createdAt).toLocaleDateString()}</p></div>
+                                          <div><div class="logo">LOGO</div><p>Order ID: #\${order.id}</p></div>
+                                          <div style="text-align: right"><h2>INVOICE</h2><p>\${new Date(order.createdAt).toLocaleDateString()}</p></div>
                                         </div>
                                         <div style="margin-bottom: 30px">
                                           <h3>Customer Details</h3>
-                                          <p><strong>Name:</strong> ${order.firstName} ${order.lastName}</p>
-                                          <p><strong>Phone:</strong> ${order.phone}</p>
-                                          <p><strong>Address:</strong> ${order.address}</p>
+                                          <p><strong>Name:</strong> \${order.firstName} \${order.lastName}</p>
+                                          <p><strong>Phone:</strong> \${order.phone}</p>
+                                          <p><strong>Address:</strong> \${order.address}</p>
                                         </div>
                                         <table>
                                           <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
                                           <tbody>
-                                            ${order.items.map((item: any) => `
+                                            \${order.items.map((item: any) => \`
                                               <tr>
-                                                <td>${item.product?.name || 'Product'}</td>
-                                                <td>${item.quantity}</td>
-                                                <td>৳${Number(item.price).toLocaleString()}</td>
-                                                <td>৳${(item.quantity * Number(item.price)).toLocaleString()}</td>
+                                                <td>\${item.product?.name || 'Product'}</td>
+                                                <td>\${item.quantity}</td>
+                                                <td>৳\${Number(item.price).toLocaleString()}</td>
+                                                <td>৳\${(item.quantity * Number(item.price)).toLocaleString()}</td>
                                               </tr>
-                                            `).join('')}
+                                            \`).join('')}
                                           </tbody>
                                         </table>
-                                        <div class="total">Total: ৳${Number(order.totalAmount).toLocaleString()}</div>
+                                        <div class="total">Total: ৳\${Number(order.totalAmount).toLocaleString()}</div>
                                         <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #888;">
                                           <p>Thank you for shopping with us!</p>
                                           <button onclick="window.print()" style="margin-top: 20px; padding: 10px 20px; background: #7FB432; color: white; border: none; border-radius: 5px; cursor: pointer;">Print Invoice</button>
@@ -167,7 +169,7 @@ function StatusBadge({ status }: { status: string }) {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${config.color}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border \${config.color}`}>
       <Icon className="w-3 h-3" />
       {status}
     </span>
