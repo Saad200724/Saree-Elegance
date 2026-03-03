@@ -19,8 +19,9 @@ export default function Footer() {
               Sarees That Define You. Experience the elegance of traditional handloom and contemporary designs.
             </p>
             <div className="flex gap-4 pt-2">
-              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors flex items-center gap-2">
                 <Facebook className="h-5 w-5" />
+                <span className="text-sm font-medium">Facebook</span>
               </a>
             </div>
           </div>

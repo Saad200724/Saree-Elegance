@@ -18,9 +18,9 @@ export default function Contact() {
             <span>Peace view apartment, Fakir garments road, Narayanganj, Bangladesh</span>
           </div>
           <div className="flex items-center gap-4 text-lg">
-            <Facebook className="text-primary" />
-            <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="hover:underline text-primary">
-              Visit our Facebook Page
+            <Facebook className="text-primary h-6 w-6" />
+            <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="hover:underline text-primary font-medium">
+              Facebook
             </a>
           </div>
         </div>
