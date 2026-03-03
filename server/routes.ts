@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { MongoUser } from "./lib/mongodb";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -12,6 +13,31 @@ export async function registerRoutes(
   // Setup Auth FIRST
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  // === MongoDB Auth Routes ===
+  app.post("/api/register", async (req, res) => {
+    try {
+      const { email, password, name, phone, address } = req.body;
+      const existing = await MongoUser.findOne({ email });
+      if (existing) return res.status(400).json({ message: "Email already exists" });
+      
+      const user = await MongoUser.create({ email, password, name, phone, address });
+      res.status(201).json({ message: "User registered in MongoDB", id: user._id });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await MongoUser.findOne({ email, password });
+      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      res.json({ message: "Logged in successfully", email: user.email });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
 
   // === Products ===
   app.get(api.products.list.path, async (req, res) => {

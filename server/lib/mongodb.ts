@@ -39,3 +39,14 @@ const ReviewSchema: Schema = new Schema({
 });
 
 export const MongoReview = mongoose.models.Review || mongoose.model('Review', ReviewSchema);
+
+const UserSchema: Schema = new Schema({
+  email: { type: String, required: true, unique: true },
+  name: { type: String },
+  phone: { type: String },
+  address: { type: String },
+  password: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const MongoUser = mongoose.models.User || mongoose.model('User', UserSchema);

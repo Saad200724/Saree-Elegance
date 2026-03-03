@@ -35,7 +35,10 @@ Key pages: Home, Shop, Category pages (Sarees, Lehengas, Pakistani Dresses), Pro
 - **API Pattern:** RESTful JSON API under `/api/` prefix
 - **Route Definitions:** Centralized in `shared/routes.ts` with Zod schemas for input validation and response typing — shared between client and server
 - **Session Management:** express-session with connect-pg-simple (PostgreSQL-backed sessions)
-- **Authentication:** Replit Auth (OpenID Connect) via Passport.js, implemented in `server/replit_integrations/auth/`
+- **Authentication:** Replit Auth integration + MongoDB Atlas sync for user data.
+- **Admin Panel:** Password-protected (`/admin`, pass: `Saree4you`) product listing.
+- **UI:** Hidden footer on login/signup pages.
+- **Database:** PostgreSQL (Postgres) and MongoDB Atlas (for sync).
 - **Development:** Vite dev server middleware for HMR; production serves static files from `dist/public`
 
 ### Data Storage

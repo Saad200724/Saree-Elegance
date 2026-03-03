@@ -15,9 +15,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Mail, User, Phone, MapPin, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import alponaBg from "@assets/Alpona_withoutbg_1771979242690.png";
+import { apiRequest } from "@/lib/queryClient";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -61,16 +61,32 @@ export default function Login() {
     },
   });
 
-  const onLoginSubmit = (data: LoginFormValues) => {
-    console.log("Login:", data);
-    toast({ title: "Success", description: "Logged in successfully" });
-    setLocation("/");
+  const onLoginSubmit = async (data: LoginFormValues) => {
+    try {
+      await apiRequest("POST", "/api/login", data);
+      toast({ title: "Success", description: "Logged in successfully" });
+      setLocation("/");
+    } catch (error: any) {
+      toast({ 
+        title: "Login Failed", 
+        description: error.message || "Invalid credentials",
+        variant: "destructive" 
+      });
+    }
   };
 
-  const onSignupSubmit = (data: SignupFormValues) => {
-    console.log("Signup:", data);
-    toast({ title: "Account Created", description: "Welcome to চন্দ্রাবতী!" });
-    setLocation("/");
+  const onSignupSubmit = async (data: SignupFormValues) => {
+    try {
+      await apiRequest("POST", "/api/register", data);
+      toast({ title: "Account Created", description: "Welcome to চন্দ্রাবতী!" });
+      setLocation("/");
+    } catch (error: any) {
+      toast({ 
+        title: "Signup Failed", 
+        description: error.message || "Email might already be in use",
+        variant: "destructive" 
+      });
+    }
   };
 
   return (
@@ -251,8 +267,6 @@ export default function Login() {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -8,7 +8,8 @@ import {
 } from "@shared/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
-import { MongoProduct, MongoReview } from "./lib/mongodb";
+import { MongoProduct, MongoReview, MongoUser } from "./lib/mongodb";
+import { type UpsertUser, type User } from "@shared/models/auth";
 
 export interface IStorage extends IAuthStorage {
   getProducts(category?: string, search?: string): Promise<Product[]>;
@@ -135,6 +136,25 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
       }
       return order;
     });
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const user = await super.upsertUser(userData);
+    // Sync to Mongo
+    try {
+      await MongoUser.findOneAndUpdate(
+        { email: user.email },
+        {
+          email: user.email,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          password: "OAuthUser", // For Replit Auth, we don't have password, but we need it for schema
+        },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.error("Mongo User Sync Error:", e);
+    }
+    return user;
   }
 
   async syncWithMongo(): Promise<void> {

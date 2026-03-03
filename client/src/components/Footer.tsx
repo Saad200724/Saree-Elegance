@@ -1,7 +1,12 @@
 import { Facebook, Instagram, Twitter } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Footer() {
+  const [location] = useLocation();
+  const hideFooter = location === "/login" || location === "/signup";
+
+  if (hideFooter) return null;
+
   return (
     <footer className="bg-white border-t border-gray-100 pt-8 md:pt-16 pb-24 md:pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
