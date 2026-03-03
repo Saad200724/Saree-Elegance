@@ -109,37 +109,56 @@ export class DatabaseStorage implements IStorage {
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
     try {
       await connectToMongoDB();
-      const existing = await this.getProduct(id);
-      if (!existing) return undefined;
+      
+      // Get all products to find the one with the generated numeric ID
+      const all = await this.getProducts();
+      const existing = all.find(p => p.id === id);
+      if (!existing) {
+        console.error(`Update failed: Product with ID ${id} not found`);
+        return undefined;
+      }
+
+      const updateData: any = {};
+      if (product.name !== undefined) updateData.name = product.name;
+      if (product.description !== undefined) updateData.description = product.description;
+      if (product.price !== undefined) updateData.price = product.price.toString();
+      if (product.originalPrice !== undefined) updateData.originalPrice = product.originalPrice?.toString();
+      if (product.imageUrl !== undefined) updateData.imageUrl = product.imageUrl;
+      if (product.category !== undefined) updateData.category = product.category;
+      if (product.stock !== undefined) updateData.stock = product.stock;
+      if (product.isNewArrival !== undefined) updateData.isNewArrival = product.isNewArrival;
 
       const updated = await MongoProduct.findOneAndUpdate(
-        { name: existing.name },
-        {
-          $set: {
-            name: product.name || existing.name,
-            description: product.description || existing.description,
-            price: product.price?.toString() || existing.price,
-            originalPrice: product.originalPrice?.toString() || existing.originalPrice,
-            imageUrl: product.imageUrl || existing.imageUrl,
-            category: product.category || existing.category,
-            stock: product.stock !== undefined ? product.stock : existing.stock,
-            isNewArrival: product.isNewArrival !== undefined ? product.isNewArrival : existing.isNewArrival
-          }
-        },
+        { name: existing.name }, // Match by name since it's the most stable field we have
+        { $set: updateData },
         { new: true }
       );
 
-      if (!updated) return undefined;
+      if (!updated) {
+        console.error(`Update failed: MongoDB document not found for name ${existing.name}`);
+        return undefined;
+      }
+
+      // Re-hash ID for consistency
+      let hash = 0;
+      const idStr = updated._id.toString();
+      for (let i = 0; i < idStr.length; i++) {
+        hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+        hash |= 0;
+      }
+
       return {
-        ...existing,
-        ...product,
+        id: Math.abs(hash),
+        name: updated.name,
+        description: updated.description,
         price: updated.price,
         originalPrice: updated.originalPrice || null,
         imageUrl: updated.imageUrl,
         category: updated.category,
         stock: updated.stock,
-        isNewArrival: updated.isNewArrival
-      } as Product;
+        isNewArrival: updated.isNewArrival,
+        createdAt: updated.createdAt
+      };
     } catch (e) {
       console.error("Mongo Update Error:", e);
       return undefined;
@@ -149,9 +168,11 @@ export class DatabaseStorage implements IStorage {
   async deleteProduct(id: number): Promise<void> {
     try {
       await connectToMongoDB();
-      const product = await this.getProduct(id);
+      const all = await this.getProducts();
+      const product = all.find(p => p.id === id);
       if (product) {
         await MongoProduct.deleteOne({ name: product.name });
+        console.log(`Deleted product ${product.name} from MongoDB`);
       }
     } catch (e) {
       console.error("Mongo Delete Error:", e);
@@ -162,12 +183,7 @@ export class DatabaseStorage implements IStorage {
     try {
       await connectToMongoDB();
       const products = await this.getProducts();
-      const product = products.find(p => p.id === id);
-      if (product) return product;
-      
-      // Fallback: try to find by some other means if ID doesn't match
-      // (e.g. if the ID was generated differently in a previous call)
-      return undefined;
+      return products.find(p => p.id === id);
     } catch (e) {
       console.error("Mongo GetProduct Error:", e);
       return undefined;
