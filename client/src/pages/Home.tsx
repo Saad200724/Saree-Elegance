@@ -132,7 +132,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features / Trust Badges */}
+      {/* Customer Reviews */}
       <section className="py-16 bg-white border-y border-gray-100 relative overflow-hidden">
         <div 
           className="absolute top-1/2 left-0 w-48 h-48 opacity-5 pointer-events-none -translate-x-1/2 -translate-y-1/2"
@@ -143,27 +143,33 @@ export default function Home() {
           style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-blue-50 text-accent rounded-full flex items-center justify-center mb-4">
-                <Truck className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50/50 border border-gray-100">
+              <div className="flex mb-4 text-yellow-400">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
               </div>
-              <h3 className="font-heading font-bold text-lg mb-2">Free Shipping</h3>
-              <p className="text-gray-500 text-sm">On all orders over ৳10,000 across the country</p>
+              <p className="text-gray-700 italic mb-4">"চন্দ্রাবতীর শাড়িগুলোর মান সত্যিই অসাধারণ। রঙের কাজ আর কাপড়ের গুণগত মান আমাকে মুগ্ধ করেছে। ধন্যবাদ অসাধারণ সার্ভিসের জন্য!"</p>
+              <h4 className="font-heading font-bold text-primary">— সুস্মিতা আহমেদ</h4>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-blue-50 text-accent rounded-full flex items-center justify-center mb-4">
-                <ShieldCheck className="w-6 h-6" />
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50/50 border border-gray-100">
+              <div className="flex mb-4 text-yellow-400">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
               </div>
-              <h3 className="font-heading font-bold text-lg mb-2">Secure Payment</h3>
-              <p className="text-gray-500 text-sm">100% secure payment with trusted gateways</p>
+              <p className="text-gray-700 italic mb-4">"বিয়ের জন্য এখান থেকে লেহেঙ্গা নিয়েছিলাম। ডিজাইনটা যেমন ইউনিক ছিল, ফিটিংটাও ছিল পারফেক্ট। সবাই খুব প্রশংসা করেছে।"</p>
+              <h4 className="font-heading font-bold text-primary">— নুসরাত জাহান</h4>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-blue-50 text-accent rounded-full flex items-center justify-center mb-4">
-                <RefreshCw className="w-6 h-6" />
+            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-gray-50/50 border border-gray-100">
+              <div className="flex mb-4 text-yellow-400">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
               </div>
-              <h3 className="font-heading font-bold text-lg mb-2">Easy Returns</h3>
-              <p className="text-gray-500 text-sm">Hassle-free 30 days return policy</p>
+              <p className="text-gray-700 italic mb-4">"অনলাইনে অর্ডার করতে প্রথমে ভয় পাচ্ছিলাম, কিন্তু চন্দ্রাবতী আমার বিশ্বাস জয় করে নিয়েছে। শাড়িটা হাতে পাওয়ার পর আরও বেশি সুন্দর লেগেছে।"</p>
+              <h4 className="font-heading font-bold text-primary">— ফারহানা চৌধুরী</h4>
             </div>
           </div>
         </div>
