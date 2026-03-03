@@ -70,6 +70,16 @@ const UserSchema: Schema = new Schema({
 
 export const MongoUser = mongoose.models.User || mongoose.model('User', UserSchema);
 
+const CartItemSchema: Schema = new Schema({
+  userId: { type: String },
+  sessionId: { type: String },
+  productId: { type: Number, required: true },
+  quantity: { type: Number, default: 1 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const MongoCartItem = mongoose.models.CartItem || mongoose.model('CartItem', CartItemSchema);
+
 const OrderSchema: Schema = new Schema({
   userId: { type: String },
   guestName: { type: String },

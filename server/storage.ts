@@ -8,7 +8,7 @@ import {
 } from "@shared/schema";
 import mongoose from "mongoose";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { MongoProduct, MongoReview, MongoUser, MongoOrder, connectToMongoDB } from "./lib/mongodb";
+import { MongoProduct, MongoReview, MongoUser, MongoOrder, MongoCartItem, connectToMongoDB } from "./lib/mongodb";
 import { type UpsertUser, type User } from "@shared/models/auth";
 
 export interface IStorage {
@@ -110,11 +110,20 @@ export class DatabaseStorage implements IStorage {
     try {
       await connectToMongoDB();
       
-      // Get all products to find the one with the generated numeric ID
-      const all = await this.getProducts();
-      const existing = all.find(p => p.id === id);
-      if (!existing) {
-        console.error(`Update failed: Product with ID ${id} not found`);
+      // Find the existing product in Mongo by the hashed numeric ID
+      const allMongo = await MongoProduct.find({});
+      const existingMongo = allMongo.find(p => {
+        let hash = 0;
+        const idStr = p._id.toString();
+        for (let i = 0; i < idStr.length; i++) {
+          hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash) === id;
+      });
+
+      if (!existingMongo) {
+        console.error(`Update failed: Mongo product with ID ${id} not found`);
         return undefined;
       }
 
@@ -128,18 +137,16 @@ export class DatabaseStorage implements IStorage {
       if (product.stock !== undefined) updateData.stock = product.stock;
       if (product.isNewArrival !== undefined) updateData.isNewArrival = product.isNewArrival;
 
-      const updated = await MongoProduct.findOneAndUpdate(
-        { name: existing.name }, // Match by name since it's the most stable field we have
+      const updated = await MongoProduct.findByIdAndUpdate(
+        existingMongo._id,
         { $set: updateData },
         { new: true }
       );
 
       if (!updated) {
-        console.error(`Update failed: MongoDB document not found for name ${existing.name}`);
         return undefined;
       }
 
-      // Re-hash ID for consistency
       let hash = 0;
       const idStr = updated._id.toString();
       for (let i = 0; i < idStr.length; i++) {
@@ -183,7 +190,11 @@ export class DatabaseStorage implements IStorage {
     try {
       await connectToMongoDB();
       const products = await this.getProducts();
-      return products.find(p => p.id === id);
+      const found = products.find(p => p.id === id);
+      if (!found) {
+        console.log(`Product with ID ${id} not found in current hash list`);
+      }
+      return found;
     } catch (e) {
       console.error("Mongo GetProduct Error:", e);
       return undefined;
@@ -239,19 +250,34 @@ export class DatabaseStorage implements IStorage {
 
   async getCartItems(userId?: string, sessionId?: string): Promise<(CartItem & { product: Product })[]> {
     try {
-      if (!isDbConnected) return [];
-      const dbCartItems = await db.select().from(cartItems).where(
-        userId 
-          ? eq(cartItems.userId, userId)
-          : eq(cartItems.sessionId, sessionId!)
-      );
+      await connectToMongoDB();
+      let query: any = {};
+      
+      // If we have a userId, we should prefer it, but also check if there are items from a previous guest session
+      if (userId) {
+        query.userId = userId.toString();
+      } else if (sessionId) {
+        query.sessionId = sessionId.toString();
+      } else {
+        console.warn("[Storage] getCartItems called without userId or sessionId");
+        return [];
+      }
+
+      console.log(`[Storage] Fetching cart for ${userId ? 'User: ' + userId : 'Session: ' + sessionId} with query:`, JSON.stringify(query));
+      const mongoCartItems = await MongoCartItem.find(query);
+      console.log(`[Storage] Found ${mongoCartItems.length} items in Mongo`);
       
       const mongoProducts = await this.getProducts();
       
-      return dbCartItems.map(item => {
+      return mongoCartItems.map(item => {
         const product = mongoProducts.find(p => p.id === item.productId);
         return {
-          ...item,
+          id: item.productId,
+          userId: item.userId || null,
+          sessionId: item.sessionId || null,
+          productId: item.productId,
+          quantity: item.quantity,
+          createdAt: item.createdAt,
           product: product || {
             id: item.productId,
             name: "Unknown Product",
@@ -274,51 +300,89 @@ export class DatabaseStorage implements IStorage {
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
     try {
-      if (!isDbConnected) throw new Error("Database not connected");
-      const [existing] = await db.select()
-        .from(cartItems)
-        .where(
-          and(
-            eq(cartItems.productId, item.productId),
-            item.userId 
-              ? eq(cartItems.userId, item.userId) 
-              : eq(cartItems.sessionId, item.sessionId!)
-          )
-        );
+      await connectToMongoDB();
+      let query: any = { productId: item.productId };
+      if (item.userId) {
+        query.userId = item.userId.toString();
+      } else if (item.sessionId) {
+        query.sessionId = item.sessionId.toString();
+      } else {
+        console.error("[Storage] Cannot add to cart: No userId or sessionId provided", item);
+        throw new Error("Cannot add to cart: No userId or sessionId provided");
+      }
+
+      console.log(`[Storage] Adding to cart: Product ${item.productId} for ${item.userId ? 'User ' + item.userId : 'Session ' + item.sessionId}`);
+      const existing = await MongoCartItem.findOne(query);
 
       if (existing) {
-        const [updated] = await db.update(cartItems)
-          .set({ quantity: existing.quantity + (item.quantity || 1) })
-          .where(eq(cartItems.id, existing.id))
-          .returning();
-        return updated;
+        existing.quantity += (item.quantity || 1);
+        await existing.save();
+        console.log(`[Storage] Updated existing item quantity to ${existing.quantity}`);
+        return { 
+          ...item, 
+          id: item.productId, 
+          quantity: existing.quantity,
+          createdAt: existing.createdAt 
+        } as CartItem;
       }
-      const [newItem] = await db.insert(cartItems).values(item).returning();
-      return newItem;
+
+      const newItem = await MongoCartItem.create({
+        userId: item.userId?.toString(),
+        sessionId: item.sessionId?.toString(),
+        productId: item.productId,
+        quantity: item.quantity || 1
+      });
+
+      console.log(`[Storage] Created new cart item in Mongo:`, newItem);
+      return { 
+        ...item, 
+        id: item.productId, 
+        quantity: newItem.quantity,
+        createdAt: newItem.createdAt 
+      } as CartItem;
     } catch (e) {
       console.error("Add to cart error:", e);
-      return { ...item, id: Math.floor(Math.random() * 1000000), userId: item.userId || null, sessionId: item.sessionId || null, createdAt: new Date() } as CartItem;
+      throw e;
     }
   }
 
-  async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
+  async updateCartItem(id: number, quantity: number, userId?: string, sessionId?: string): Promise<CartItem | undefined> {
     try {
-      if (!isDbConnected) throw new Error("Database not connected");
-      const [updated] = await db.update(cartItems)
-        .set({ quantity })
-        .where(eq(cartItems.id, id))
-        .returning();
-      return updated;
+      await connectToMongoDB();
+      let query: any = { productId: id };
+      if (userId) query.userId = userId;
+      else if (sessionId) query.sessionId = sessionId;
+      else return undefined;
+
+      const updated = await MongoCartItem.findOneAndUpdate(
+        query,
+        { $set: { quantity } },
+        { new: true }
+      );
+      if (!updated) return undefined;
+      return {
+        id: updated.productId,
+        userId: updated.userId || null,
+        sessionId: updated.sessionId || null,
+        productId: updated.productId,
+        quantity: updated.quantity,
+        createdAt: updated.createdAt
+      } as CartItem;
     } catch (e) {
       console.error("Update cart item error:", e);
       return undefined;
     }
   }
 
-  async removeFromCart(id: number): Promise<void> {
+  async removeFromCart(id: number, userId?: string, sessionId?: string): Promise<void> {
     try {
-      if (!isDbConnected) throw new Error("Database not connected");
-      await db.delete(cartItems).where(eq(cartItems.id, id));
+      await connectToMongoDB();
+      let query: any = { productId: id };
+      if (userId) query.userId = userId;
+      else if (sessionId) query.sessionId = sessionId;
+      else return;
+
+      await MongoCartItem.deleteOne(query);
     } catch (e) {
       console.error("Remove from cart error:", e);
     }
@@ -326,15 +390,13 @@ export class DatabaseStorage implements IStorage {
 
   async clearCart(userId?: string, sessionId?: string): Promise<void> {
     try {
-      if (!isDbConnected) throw new Error("Database not connected");
-      const whereClause = userId 
-        ? eq(cartItems.userId, userId)
-        : sessionId 
-          ? eq(cartItems.sessionId, sessionId)
-          : null;
-      if (whereClause) {
-        await db.delete(cartItems).where(whereClause);
-      }
+      await connectToMongoDB();
+      let query: any = {};
+      if (userId) query.userId = userId;
+      else if (sessionId) query.sessionId = sessionId;
+      else return;
+
+      await MongoCartItem.deleteMany(query);
     } catch (e) {
       console.error("Clear cart error:", e);
     }
@@ -342,27 +404,33 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(orderData: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order> {
     try {
-      if (!isDbConnected) throw new Error("Database not connected");
-      
       const mongoProducts = await this.getProducts();
-      
-      const order = await db.transaction(async (tx: any) => {
-        const [newOrder] = await tx.insert(orders).values({
-          ...orderData,
-          totalAmount: orderData.totalAmount.toString(),
-        }).returning();
-        for (const item of items) {
-          await tx.insert(orderItems).values({
-            orderId: newOrder.id,
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price.toString(),
-          });
-        }
-        return newOrder;
-      });
+      let newOrderId = Math.floor(Math.random() * 1000000);
 
-      // Sync Order to MongoDB
+      if (isDbConnected) {
+        try {
+          const order = await db.transaction(async (tx: any) => {
+            const [newOrder] = await tx.insert(orders).values({
+              ...orderData,
+              totalAmount: orderData.totalAmount.toString(),
+            }).returning();
+            for (const item of items) {
+              await tx.insert(orderItems).values({
+                orderId: newOrder.id,
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.price.toString(),
+              });
+            }
+            return newOrder;
+          });
+          newOrderId = order.id;
+        } catch (dbErr) {
+          console.error("Database Order Error, falling back to Mongo only:", dbErr);
+        }
+      }
+
+      // Sync/Create Order in MongoDB
       try {
         await connectToMongoDB();
         const itemsWithDetails = items.map(item => {
@@ -375,23 +443,24 @@ export class DatabaseStorage implements IStorage {
           };
         });
 
-        const newMongoOrder = await MongoOrder.create({
+        await MongoOrder.create({
           ...orderData,
           totalAmount: orderData.totalAmount.toString(),
           items: itemsWithDetails,
           status: 'pending'
         });
-        
-        // Return order with the MongoDB ID if possible, but keeping numeric for Drizzle compatibility
-        return {
-          ...order,
-          id: order.id // Keep using Drizzle ID for consistency in the app
-        };
       } catch (e) {
         console.error("Mongo Order Sync Error:", e);
+        if (!isDbConnected) throw e; // If both fail, then we have a problem
       }
 
-      return order;
+      return {
+        ...orderData,
+        id: newOrderId,
+        status: 'pending',
+        createdAt: new Date(),
+        paymentMethod: orderData.paymentMethod || 'Cash on Delivery'
+      } as Order;
     } catch (e) {
       console.error("Create order error:", e);
       throw e;
@@ -402,79 +471,112 @@ export class DatabaseStorage implements IStorage {
     try {
       await connectToMongoDB();
       
-      // Fetch from MongoDB instead of Drizzle to have "EVERYTHING in MongoDB"
       let mongoQuery: any = {};
       if (userId) mongoQuery.userId = userId;
       
       const mongoOrders = await MongoOrder.find(mongoQuery).sort({ createdAt: -1 });
       
-      return mongoOrders.map(o => ({
-        id: Math.floor(Math.random() * 1000000), // Mock numeric ID for frontend compatibility
-        userId: o.userId || null,
-        firstName: o.firstName || null,
-        lastName: o.lastName || null,
-        email: o.email || null,
-        phone: o.phone || null,
-        division: o.division || null,
-        district: o.district || null,
-        upazila: o.upazila || null,
-        address: o.address,
-        orderNotes: o.orderNotes || null,
-        totalAmount: o.totalAmount,
-        status: o.status,
-        paymentMethod: o.paymentMethod,
-        createdAt: o.createdAt,
-        items: o.items.map((item: any) => ({
-          id: Math.floor(Math.random() * 1000000),
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          product: {
-            name: item.name,
-            imageUrl: item.imageUrl
-          }
-        }))
-      }));
+      return mongoOrders.map(o => {
+        // Deterministic hash of MongoDB _id for stable order ID
+        let hash = 0;
+        const idStr = o._id.toString();
+        for (let i = 0; i < idStr.length; i++) {
+          hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+          hash |= 0;
+        }
+        const orderId = Math.abs(hash);
+
+        return {
+          id: orderId,
+          userId: o.userId || null,
+          firstName: o.firstName || null,
+          lastName: o.lastName || null,
+          email: o.email || null,
+          phone: o.phone || null,
+          division: o.division || null,
+          district: o.district || null,
+          upazila: o.upazila || null,
+          address: o.address,
+          orderNotes: o.orderNotes || null,
+          totalAmount: o.totalAmount,
+          status: o.status,
+          paymentMethod: o.paymentMethod,
+          createdAt: o.createdAt,
+          items: o.items.map((item: any, idx: number) => ({
+            id: orderId * 100 + idx, // Stable item ID derived from order ID
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+            product: {
+              name: item.name,
+              imageUrl: item.imageUrl
+            }
+          }))
+        };
+      });
     } catch (e) {
       console.error("Order Fetch Error:", e);
-      // Fallback to Drizzle if Mongo fails
-      if (!isDbConnected) return [];
-      let allOrders;
-      if (userId) {
-        allOrders = await db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
-      } else {
-        allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
-      }
-      
-      const mongoProducts = await this.getProducts();
-      const results = [];
-      
-      for (const order of allOrders) {
-        const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
-        const itemsWithProduct = items.map(item => ({
-          ...item,
-          product: mongoProducts.find(p => p.id === item.productId)
-        }));
-        results.push({ ...order, items: itemsWithProduct });
-      }
-      return results;
+      return [];
     }
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
     try {
+      await connectToMongoDB();
+      
+      // Since we use hashed IDs in the frontend, we need to find the order by matching the hash
+      const allOrders = await MongoOrder.find({});
+      const targetOrder = allOrders.find(o => {
+        let hash = 0;
+        const idStr = o._id.toString();
+        for (let i = 0; i < idStr.length; i++) {
+          hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash) === id;
+      });
+
+      if (!targetOrder) {
+        console.error(`Order with hashed ID ${id} not found in MongoDB`);
+        return undefined;
+      }
+
+      const updated = await MongoOrder.findByIdAndUpdate(
+        targetOrder._id,
+        { $set: { status } },
+        { new: true }
+      );
+
+      if (!updated) return undefined;
+
+      // Sync with Drizzle if connected
       if (isDbConnected) {
-        await db.update(orders).set({ status }).where(eq(orders.id, id));
+        try {
+          // Attempt to find and update in Drizzle too, though Drizzle might have different IDs
+          // This is best-effort sync
+          await db.update(orders).set({ status }).where(eq(orders.email, updated.email));
+        } catch (dbErr) {
+          console.warn("Drizzle status update failed (non-critical):", dbErr);
+        }
       }
       
-      // Update Mongo as well
-      await connectToMongoDB();
-      // Since we don't have a direct link between Drizzle ID and Mongo ID easily, 
-      // we might need to find by some other criteria or improve the mapping.
-      // For now, let's try to find by some order details if possible, or just skip if not critical.
-      // A better way would be to store the Mongo ID in Drizzle or vice versa.
-      
-      return undefined;
+      return {
+        id: id,
+        userId: updated.userId || null,
+        firstName: updated.firstName || null,
+        lastName: updated.lastName || null,
+        email: updated.email || null,
+        phone: updated.phone || null,
+        division: updated.division || null,
+        district: updated.district || null,
+        upazila: updated.upazila || null,
+        address: updated.address,
+        orderNotes: updated.orderNotes || null,
+        totalAmount: updated.totalAmount,
+        status: updated.status,
+        paymentMethod: updated.paymentMethod,
+        createdAt: updated.createdAt
+      } as Order;
     } catch (e) {
       console.error("Update order status error:", e);
       return undefined;

@@ -154,8 +154,10 @@ export default function Admin() {
     };
 
     if (editingProduct) {
+      console.log("Updating product:", editingProduct.id, data);
       updateMutation.mutate({ id: editingProduct.id, data });
     } else {
+      console.log("Creating product:", data);
       createMutation.mutate(data);
     }
   };

@@ -140,22 +140,24 @@ export async function registerRoutes(
 
   // === Cart ===
   app.get(api.cart.list.path, async (req, res) => {
-    const userId = (req.user as any)?.claims?.sub;
-    const sessionId = req.sessionID;
-    const items = await storage.getCartItems(userId, sessionId);
+    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const sessionId = req.headers["x-session-id"] || req.sessionID;
+    console.log("Route GET /api/cart - UserID:", userId, "SessionID:", sessionId);
+    const items = await storage.getCartItems(userId, sessionId as string);
     res.json(items);
   });
 
   app.post(api.cart.addItem.path, async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
-      const sessionId = req.sessionID;
+      const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+      const sessionId = req.headers["x-session-id"] || req.sessionID;
       const input = api.cart.addItem.input.parse(req.body);
       
+      console.log("Route POST /api/cart - UserID:", userId, "SessionID:", sessionId, "Body:", req.body);
       const item = await storage.addToCart({
         ...input,
         userId,
-        sessionId,
+        sessionId: sessionId as string,
       });
       res.status(201).json(item);
     } catch (err) {
@@ -167,18 +169,28 @@ export async function registerRoutes(
   });
 
   app.patch(api.cart.updateItem.path, async (req, res) => {
+    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const sessionId = req.headers["x-session-id"] || req.sessionID;
     const input = api.cart.updateItem.input.parse(req.body);
-    const updated = await storage.updateCartItem(Number(req.params.id), input.quantity);
+    const updated = await storage.updateCartItem(Number(req.params.id), input.quantity, userId, sessionId as string);
     if (!updated) return res.status(404).json({ message: "Cart item not found" });
     res.json(updated);
   });
 
   app.delete(api.cart.removeItem.path, async (req, res) => {
-    await storage.removeFromCart(Number(req.params.id));
+    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const sessionId = req.headers["x-session-id"] || req.sessionID;
+    await storage.removeFromCart(Number(req.params.id), userId, sessionId as string);
     res.status(204).send();
   });
 
-  // === Orders ===
+  app.get("/api/auth/user", (req, res) => {
+    // Since we're using a custom session-less/simple auth for now
+    // we might need to check how the user is being persisted.
+    // If the user is logged in via /api/login, we should have something in the session or a cookie.
+    // For now, let's just return a 401 if not found, but we need to find where the user is stored.
+    res.status(401).send("Not authenticated");
+  });
   app.get(api.orders.list.path, async (req, res) => {
     const userId = (req.user as any)?.claims?.sub;
     // If it's an admin request (we should ideally check for admin role)

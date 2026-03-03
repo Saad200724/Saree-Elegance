@@ -103,8 +103,8 @@ export default function Login() {
           style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
         />
 
-        <div className="max-w-md w-full relative z-10">
-          <Card className="border-border/40 shadow-2xl shadow-primary/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/80">
+        <div className="max-w-md w-full relative z-20">
+          <Card className="border-border/40 shadow-2xl shadow-primary/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/90">
             <CardHeader className="space-y-1 pb-4 text-center">
               <CardTitle className="text-3xl font-bold font-heading text-primary">
                 {isSignup ? "Create Account" : "Welcome Back"}
@@ -113,7 +113,7 @@ export default function Login() {
                 {isSignup ? "Join the চন্দ্রাবতী family today" : "Sign in to access your account"}
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-black">
               {isSignup ? (
                 <Form {...signupForm}>
                   <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-3">
@@ -122,11 +122,11 @@ export default function Login() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <User className="h-3 w-3 text-accent" /> Full Name
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="John Doe" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <Input placeholder="John Doe" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -137,11 +137,11 @@ export default function Login() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <Mail className="h-3 w-3 text-accent" /> Email
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="email@example.com" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <Input placeholder="email@example.com" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -152,11 +152,11 @@ export default function Login() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <Phone className="h-3 w-3 text-accent" /> Phone
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="01XXXXXXXXX" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <Input placeholder="01XXXXXXXXX" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -167,11 +167,15 @@ export default function Login() {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <MapPin className="h-3 w-3 text-accent" /> Address
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="Full Delivery Address" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <textarea 
+                              placeholder="Full Delivery Address" 
+                              {...field} 
+                              className="w-full min-h-[80px] p-2 rounded-lg border border-gray-300 focus:ring-primary text-black bg-white opacity-100 text-sm" 
+                            />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -182,11 +186,11 @@ export default function Login() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <Lock className="h-3 w-3 text-accent" /> Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <Input type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -197,18 +201,18 @@ export default function Login() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2 text-xs">
+                          <FormLabel className="text-black flex items-center gap-2 text-xs font-bold">
                             <Lock className="h-3 w-3 text-accent" /> Confirm Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} className="h-10 rounded-lg border-input focus:ring-primary" />
+                            <Input type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full btn-accent mt-4 h-11 text-lg">
-                      Sign Up
+                    <Button type="submit" className="w-full btn-accent mt-4 h-11 text-lg" disabled={signupForm.formState.isSubmitting}>
+                      {signupForm.formState.isSubmitting ? "Creating..." : "Sign Up"}
                     </Button>
                   </form>
                 </Form>
@@ -220,11 +224,11 @@ export default function Login() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2">
+                          <FormLabel className="text-black flex items-center gap-2 font-bold">
                             <Mail className="h-4 w-4 text-accent" /> Email
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="name@example.com" {...field} className="h-12 rounded-xl border-input focus:ring-primary" />
+                            <Input placeholder="name@example.com" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -235,11 +239,11 @@ export default function Login() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-foreground/80 flex items-center gap-2">
+                          <FormLabel className="text-black flex items-center gap-2 font-bold">
                             <Lock className="h-4 w-4 text-accent" /> Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} className="h-12 rounded-xl border-input focus:ring-primary" />
+                            <Input type="password" placeholder="••••••••" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

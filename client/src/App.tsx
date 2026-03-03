@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 // Pages
 import Home from "@/pages/Home";
@@ -25,6 +27,12 @@ import Dashboard from "@/pages/Dashboard";
 import MessengerFloating from "@/components/MessengerFloating";
 
 function Router() {
+  useEffect(() => {
+    if (!localStorage.getItem("x-session-id")) {
+      localStorage.setItem("x-session-id", uuidv4());
+    }
+  }, []);
+
   return (
     <Switch>
       <Route path="/" component={Home} />

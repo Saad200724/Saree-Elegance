@@ -6,9 +6,19 @@ export function useCart() {
   return useQuery({
     queryKey: [api.cart.list.path],
     queryFn: async () => {
-      const res = await fetch(api.cart.list.path, { credentials: "include" });
+      console.log("Fetching cart items...");
+      const sessionId = localStorage.getItem("x-session-id");
+      const headers: Record<string, string> = {};
+      if (sessionId) headers["x-session-id"] = sessionId;
+
+      const res = await fetch(api.cart.list.path, { 
+        headers,
+        credentials: "include" 
+      });
       if (!res.ok) throw new Error("Failed to fetch cart");
-      return api.cart.list.responses[200].parse(await res.json());
+      const data = await res.json();
+      console.log("Cart data received:", data);
+      return api.cart.list.responses[200].parse(data);
     },
   });
 }
@@ -19,14 +29,24 @@ export function useAddToCart() {
 
   return useMutation({
     mutationFn: async ({ productId, quantity }: { productId: number; quantity: number }) => {
+      console.log("Adding to cart:", { productId, quantity });
+      const sessionId = localStorage.getItem("x-session-id");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (sessionId) headers["x-session-id"] = sessionId;
+
       const res = await fetch(api.cart.addItem.path, {
         method: api.cart.addItem.method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ productId, quantity }),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to add to cart");
-      return api.cart.addItem.responses[201].parse(await res.json());
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Failed to add to cart");
+      }
+      const result = await res.json();
+      console.log("Add to cart result:", result);
+      return api.cart.addItem.responses[201].parse(result);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.cart.list.path] });
@@ -49,10 +69,14 @@ export function useUpdateCartItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
+      const sessionId = localStorage.getItem("x-session-id");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (sessionId) headers["x-session-id"] = sessionId;
+
       const url = buildUrl(api.cart.updateItem.path, { id });
       const res = await fetch(url, {
         method: api.cart.updateItem.method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ quantity }),
         credentials: "include",
       });
@@ -69,9 +93,14 @@ export function useRemoveCartItem() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
+      const sessionId = localStorage.getItem("x-session-id");
+      const headers: Record<string, string> = {};
+      if (sessionId) headers["x-session-id"] = sessionId;
+
       const url = buildUrl(api.cart.removeItem.path, { id });
       const res = await fetch(url, {
         method: api.cart.removeItem.method,
+        headers,
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to remove item");

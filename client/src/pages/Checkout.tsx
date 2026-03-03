@@ -8,10 +8,9 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { insertOrderSchema } from "@shared/routes";
 import { z } from "zod";
 import { useLocation } from "wouter";
-import { Loader2 } from "lucide-react";
+import { Loader2, Phone, ShoppingBag, CheckCircle2, ShieldCheck, Truck } from "lucide-react";
 
 const checkoutSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -41,21 +40,21 @@ export default function Checkout() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
+      firstName: user?.name?.split(' ')[0] || "",
+      lastName: user?.name?.split(' ').slice(1).join(' ') || "",
       email: user?.email || "",
-      phone: "",
+      phone: user?.phone || "",
       division: "",
       district: "",
       upazila: "",
-      address: "",
+      address: user?.address || "",
       orderNotes: "",
       paymentMethod: "Cash on Delivery",
     },
   });
 
   if (authLoading || cartLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="animate-spin text-primary" /></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]"><Loader2 className="animate-spin text-primary w-12 h-12" /></div>;
   }
 
   if (!cartItems || cartItems.length === 0) {
@@ -67,7 +66,6 @@ export default function Checkout() {
     createOrder.mutate({
       ...data,
       totalAmount: total.toString(),
-      status: 'pending',
     }, {
       onSuccess: (order) => {
         setLocation(`/success?orderId=${order.id}`);
@@ -76,44 +74,64 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
+    <div className="min-h-screen flex flex-col bg-[#FDFDFD] selection:bg-primary/10">
       <Navbar />
       
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[#7FB432] rounded-full flex items-center justify-center">
-               <span className="text-white font-bold text-xs">LOGO</span>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        {/* Modern Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-16 gap-8">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-primary rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-primary/30 rotate-3 transform transition-transform hover:rotate-0 duration-500">
+              <ShoppingBag className="text-white w-9 h-9 -rotate-3 transition-transform hover:rotate-0" />
             </div>
-            <h1 className="text-2xl font-bold text-[#2D3E50]">Checkout</h1>
+            <div>
+              <h1 className="text-5xl font-black text-gray-900 tracking-tighter italic">Checkout.</h1>
+              <p className="text-gray-400 font-bold text-sm uppercase tracking-widest mt-1">Complete your ethnic collection order</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-[#2D3E50] font-medium">
-             <span className="text-lg">📞</span>
-             <span>01405-045023</span>
+          
+          <div className="flex items-center gap-6 bg-white p-6 rounded-[2.5rem] shadow-xl shadow-gray-100/50 border border-gray-50/50 group hover:scale-105 transition-all duration-500">
+            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center group-hover:bg-accent group-hover:rotate-12 transition-all">
+              <Phone className="w-6 h-6 text-accent group-hover:text-white transition-colors" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Order Hotline</p>
+              <p className="font-black text-gray-900 text-2xl tracking-tighter">01405-045023</p>
+            </div>
           </div>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-12 gap-16">
             
-            {/* Left Column: Order Details & Address */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="bg-[#F4F8EF] px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-[#3A5A1F] font-bold text-lg">Order Details</h2>
+            {/* Left Section: Input Fields */}
+            <div className="lg:col-span-8 space-y-12">
+              
+              {/* Personal Information */}
+              <div className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-100/30 overflow-hidden group hover:shadow-gray-200/40 transition-all duration-700">
+                <div className="bg-[#fcfcfc] px-12 py-8 border-b border-gray-50 flex items-center justify-between">
+                  <h2 className="text-2xl font-black text-gray-900 flex items-center gap-4">
+                    <div className="w-3 h-10 bg-primary rounded-full shadow-lg shadow-primary/20" />
+                    Personal Info
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Step 01</span>
+                  </div>
                 </div>
-                <div className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="p-12 space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <FormField
                       control={form.control}
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-semibold">First Name *</FormLabel>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">First Name *</FormLabel>
                           <FormControl>
-                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                            <Input placeholder="System" className="h-16 bg-gray-50/30 border-gray-100 focus:bg-white focus:ring-[12px] focus:ring-primary/5 rounded-[1.25rem] transition-all text-lg font-bold px-8 placeholder:text-gray-200" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="font-bold text-xs" />
                         </FormItem>
                       )}
                     />
@@ -122,26 +140,27 @@ export default function Checkout() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-semibold">Last Name</FormLabel>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Last Name *</FormLabel>
                           <FormControl>
-                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                            <Input placeholder="Administrator" className="h-16 bg-gray-50/30 border-gray-100 focus:bg-white focus:ring-[12px] focus:ring-primary/5 rounded-[1.25rem] transition-all text-lg font-bold px-8 placeholder:text-gray-200" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="font-bold text-xs" />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <FormField
                       control={form.control}
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-semibold">Phone *</FormLabel>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Phone Number *</FormLabel>
                           <FormControl>
-                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                            <Input placeholder="01XXXXXXXXX" className="h-16 bg-gray-50/30 border-gray-100 focus:bg-white focus:ring-[12px] focus:ring-primary/5 rounded-[1.25rem] transition-all text-lg font-bold px-8 placeholder:text-gray-200" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="font-bold text-xs" />
                         </FormItem>
                       )}
                     />
@@ -150,68 +169,90 @@ export default function Checkout() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-700 font-semibold">Email Address *</FormLabel>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Email Address *</FormLabel>
                           <FormControl>
-                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                            <Input placeholder="admin@gmail.com" className="h-16 bg-gray-50/30 border-gray-100 focus:bg-white focus:ring-[12px] focus:ring-primary/5 rounded-[1.25rem] transition-all text-lg font-bold px-8 placeholder:text-gray-200" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="font-bold text-xs" />
                         </FormItem>
                       )}
                     />
                   </div>
+                </div>
+              </div>
 
-                  <div className="pt-4">
-                    <h3 className="text-[#3A5A1F] font-bold text-lg mb-6">Customer Address</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="division"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-semibold">Division *</FormLabel>
-                            <select 
-                              className="flex h-12 w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
-                              {...field}
-                            >
-                              <option value="">Select Division</option>
-                              <option value="Dhaka">Dhaka</option>
-                              <option value="Chittagong">Chittagong</option>
-                            </select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="district"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-semibold">District *</FormLabel>
-                            <select 
-                              className="flex h-12 w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
-                              {...field}
-                            >
-                              <option value="">Select District</option>
-                              <option value="Dhaka">Dhaka</option>
-                            </select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="upazila"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-700 font-semibold">Upazila/Thana *</FormLabel>
-                            <FormControl>
-                              <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              {/* Shipping Address */}
+              <div className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-100/30 overflow-hidden group hover:shadow-gray-200/40 transition-all duration-700">
+                <div className="bg-[#fcfcfc] px-12 py-8 border-b border-gray-50 flex items-center justify-between">
+                  <h2 className="text-2xl font-black text-gray-900 flex items-center gap-4">
+                    <div className="w-3 h-10 bg-accent rounded-full shadow-lg shadow-accent/20" />
+                    Shipping Address
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Step 02</span>
+                  </div>
+                </div>
+                
+                <div className="p-12 space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <FormField
+                      control={form.control}
+                      name="division"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Division *</FormLabel>
+                          <select 
+                            className="w-full h-16 bg-gray-50/30 border border-gray-100 rounded-[1.25rem] px-8 text-gray-900 font-bold text-lg focus:bg-white focus:ring-[12px] focus:ring-primary/5 transition-all outline-none appearance-none cursor-pointer"
+                            {...field}
+                          >
+                            <option value="">Select Division</option>
+                            <option value="Dhaka">Dhaka</option>
+                            <option value="Chittagong">Chittagong</option>
+                            <option value="Rajshahi">Rajshahi</option>
+                            <option value="Khulna">Khulna</option>
+                            <option value="Barisal">Barisal</option>
+                            <option value="Sylhet">Sylhet</option>
+                            <option value="Rangpur">Rangpur</option>
+                            <option value="Mymensingh">Mymensingh</option>
+                          </select>
+                          <FormMessage className="font-bold text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="district"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">District *</FormLabel>
+                          <select 
+                            className="w-full h-16 bg-gray-50/30 border border-gray-100 rounded-[1.25rem] px-8 text-gray-900 font-bold text-lg focus:bg-white focus:ring-[12px] focus:ring-primary/5 transition-all outline-none appearance-none cursor-pointer"
+                            {...field}
+                          >
+                            <option value="">Select District</option>
+                            <option value="Dhaka">Dhaka</option>
+                            <option value="Gazipur">Gazipur</option>
+                            <option value="Narayanganj">Narayanganj</option>
+                            <option value="Savar">Savar</option>
+                          </select>
+                          <FormMessage className="font-bold text-xs" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="upazila"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Upazilla/Thana *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter Thana" className="h-16 bg-gray-50/30 border-gray-100 focus:bg-white focus:ring-[12px] focus:ring-primary/5 rounded-[1.25rem] transition-all text-lg font-bold px-8 placeholder:text-gray-200" {...field} />
+                          </FormControl>
+                          <FormMessage className="font-bold text-xs" />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   <FormField
@@ -219,14 +260,15 @@ export default function Checkout() {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-semibold">Full Address *</FormLabel>
+                        <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Full Address *</FormLabel>
                         <FormControl>
                           <textarea 
-                            className="flex min-h-[100px] w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                            placeholder="House number, Street name, Area, etc."
+                            className="w-full min-h-[160px] bg-gray-50/30 border border-gray-100 rounded-[2rem] p-10 text-lg font-bold focus:bg-white focus:ring-[12px] focus:ring-primary/5 transition-all outline-none resize-none placeholder:text-gray-200"
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="font-bold text-xs" />
                       </FormItem>
                     )}
                   />
@@ -236,15 +278,15 @@ export default function Checkout() {
                     name="orderNotes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-semibold">Order Notes (Optional)</FormLabel>
+                        <FormLabel className="text-gray-400 font-black text-[10px] uppercase tracking-[0.2em] mb-4 block">Order Notes (Optional)</FormLabel>
                         <FormControl>
                           <textarea 
-                            placeholder="Add any special instructions for your order"
-                            className="flex min-h-[80px] w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                            placeholder="Add any special instructions for your delivery"
+                            className="w-full min-h-[100px] bg-gray-50/30 border border-gray-100 rounded-[1.5rem] p-8 text-lg font-bold focus:bg-white focus:ring-[12px] focus:ring-primary/5 transition-all outline-none resize-none placeholder:text-gray-200"
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="font-bold text-xs" />
                       </FormItem>
                     )}
                   />
@@ -252,69 +294,92 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Right Column: Order Summary & Payment */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="bg-[#F4F8EF] px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-[#3A5A1F] font-bold text-lg">Order Summary</h2>
+            {/* Right Section: Order Summary & Payment */}
+            <div className="lg:col-span-4 space-y-12">
+              <div className="bg-white rounded-[3rem] border border-gray-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] overflow-hidden sticky top-24 transform transition-transform hover:-translate-y-1 duration-700">
+                <div className="bg-[#fcfcfc] px-10 py-8 border-b border-gray-50">
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Order Summary</h2>
                 </div>
-                <div className="p-6">
-                  <div className="space-y-4 mb-6">
+                
+                <div className="p-10">
+                  {/* Cart Items Scroll Area */}
+                  <div className="space-y-8 mb-10 max-h-[380px] overflow-y-auto pr-4 custom-scrollbar">
                     {cartItems.map((item) => (
-                      <div key={item.id} className="flex gap-4 items-center">
-                        <div className="w-16 h-16 border border-gray-100 rounded bg-gray-50 p-1 flex-shrink-0">
-                          <img src={item.product.imageUrl} className="w-full h-full object-contain" />
+                      <div key={item.id} className="flex gap-6 items-center group">
+                        <div className="w-24 h-24 bg-gray-50 rounded-[1.5rem] overflow-hidden border border-gray-100 flex-shrink-0 group-hover:scale-105 group-hover:rotate-2 transition-all duration-500 shadow-sm">
+                          <img src={item.product.imageUrl} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity} x ৳{Number(item.product.price)}</p>
+                          <p className="text-lg font-black text-gray-900 truncate tracking-tight group-hover:text-primary transition-colors">{item.product.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Qty: {item.quantity}</span>
+                            <div className="w-1 h-1 bg-gray-200 rounded-full" />
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">৳{Number(item.product.price).toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="space-y-3 border-t border-gray-100 pt-4">
-                    <div className="flex justify-between text-gray-600">
+                  {/* Cost Breakdown */}
+                  <div className="space-y-6 border-t border-gray-50 pt-10">
+                    <div className="flex justify-between items-center text-gray-400 font-bold text-sm uppercase tracking-widest">
                       <span>Subtotal</span>
-                      <span className="font-semibold">৳{subtotal}</span>
+                      <span className="text-gray-900 font-black">৳{subtotal.toLocaleString()}</span>
                     </div>
-                    <div className="text-[#3A5A1F] text-sm cursor-pointer hover:underline">
-                      Have a coupon? Click here to enter your code
+                    
+                    <div className="bg-primary/5 p-6 rounded-[1.5rem] border border-primary/10 flex items-center justify-between group cursor-pointer transition-all hover:bg-primary/10">
+                      <span className="text-primary font-black text-xs uppercase tracking-[0.2em]">Apply Coupon</span>
+                      <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white text-lg font-black shadow-lg shadow-primary/20 transition-all group-hover:scale-110 group-hover:rotate-90">+</div>
                     </div>
-                    <div className="flex justify-between text-gray-600">
+
+                    <div className="flex justify-between items-center text-gray-400 font-bold text-sm uppercase tracking-widest">
                       <span>Delivery Fee</span>
-                      <span className="font-semibold">৳{deliveryFee}</span>
+                      <span className="text-gray-900 font-black">৳{deliveryFee}</span>
                     </div>
-                    <div className="flex justify-between text-lg font-bold text-[#3A5A1F] border-t border-gray-100 pt-3">
-                      <span>Total</span>
-                      <span>৳{total}</span>
+                    
+                    {/* Grand Total */}
+                    <div className="bg-gray-900 text-white p-10 rounded-[2.5rem] mt-10 shadow-2xl shadow-gray-900/20 transform -rotate-1 hover:rotate-0 transition-transform duration-500 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                      <div className="flex justify-between items-end relative z-10">
+                        <span className="text-xs font-black uppercase tracking-[0.3em] opacity-50 mb-2">Grand Total</span>
+                        <span className="text-5xl font-black italic tracking-tighter">৳{total.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 space-y-4">
-                    <p className="font-bold text-gray-700">Payment Method</p>
+                  {/* Payment Selection */}
+                  <div className="mt-16 space-y-8">
+                    <p className="font-black text-gray-900 text-xs uppercase tracking-[0.3em] mb-8 border-l-4 border-accent pl-6">Payment Method</p>
                     <FormField
                       control={form.control}
                       name="paymentMethod"
                       render={({ field }) => (
-                        <div className="space-y-3">
+                        <div className="space-y-5">
                           <div 
-                            className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${field.value === "Cash on Delivery" ? "bg-[#FFFCEB] border-[#FFD33D]" : "border-gray-200"}`}
+                            className={`flex items-center gap-6 p-8 rounded-[2rem] border-2 cursor-pointer transition-all duration-500 ${field.value === "Cash on Delivery" ? "bg-primary/5 border-primary shadow-xl shadow-primary/5 scale-[1.03]" : "bg-white border-gray-100 hover:border-gray-200"}`}
                             onClick={() => field.onChange("Cash on Delivery")}
                           >
-                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${field.value === "Cash on Delivery" ? "border-[#FFD33D]" : "border-gray-300"}`}>
-                              {field.value === "Cash on Delivery" && <div className="w-2 h-2 rounded-full bg-[#FFD33D]" />}
+                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${field.value === "Cash on Delivery" ? "border-primary bg-primary shadow-lg shadow-primary/30" : "border-gray-200"}`}>
+                              {field.value === "Cash on Delivery" && <div className="w-3 h-3 rounded-full bg-white shadow-sm" />}
                             </div>
-                            <span className="font-medium text-gray-900">Cash on Delivery</span>
+                            <div className="flex-1">
+                              <span className="font-black text-gray-900 text-xl tracking-tight">Cash on Delivery</span>
+                              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Payment at your doorstep</p>
+                            </div>
                           </div>
+                          
                           <div 
-                            className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${field.value === "RupantorPay" ? "bg-[#FFFCEB] border-[#FFD33D]" : "border-gray-200"}`}
+                            className={`flex items-center gap-6 p-8 rounded-[2rem] border-2 cursor-pointer transition-all duration-500 ${field.value === "RupantorPay" ? "bg-accent/5 border-accent shadow-xl shadow-accent/5 scale-[1.03]" : "bg-white border-gray-100 hover:border-gray-200"}`}
                             onClick={() => field.onChange("RupantorPay")}
                           >
-                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${field.value === "RupantorPay" ? "border-[#FFD33D]" : "border-gray-300"}`}>
-                              {field.value === "RupantorPay" && <div className="w-2 h-2 rounded-full bg-[#FFD33D]" />}
+                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${field.value === "RupantorPay" ? "border-accent bg-accent shadow-lg shadow-accent/30" : "border-gray-200"}`}>
+                              {field.value === "RupantorPay" && <div className="w-3 h-3 rounded-full bg-white shadow-sm" />}
                             </div>
-                            <span className="font-medium text-gray-900 text-sm">RupantorPay (bKash, Nagad, Rocket)</span>
+                            <div className="flex-1">
+                              <span className="font-black text-gray-900 text-xl tracking-tight">RupantorPay</span>
+                              <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">bKash, Nagad, Rocket</p>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -324,10 +389,34 @@ export default function Checkout() {
                   <Button 
                     type="submit" 
                     disabled={createOrder.isPending} 
-                    className="w-full h-14 bg-[#FFD33D] hover:bg-[#FFD33D]/90 text-gray-900 font-bold text-lg rounded-lg mt-8"
+                    className="w-full h-24 bg-accent hover:bg-accent/90 text-white font-black text-3xl rounded-[2.5rem] mt-16 shadow-2xl shadow-accent/40 transition-all hover:scale-[1.05] active:scale-[0.95] group relative overflow-hidden"
                   >
-                    {createOrder.isPending ? "Placing Order..." : "Place Order Now"}
+                    <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                    {createOrder.isPending ? (
+                      <div className="flex items-center gap-6 relative z-10">
+                        <Loader2 className="w-10 h-10 animate-spin" />
+                        <span className="italic">Placing...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-4 relative z-10">
+                        <span>Place Order</span>
+                        <CheckCircle2 className="w-8 h-8 group-hover:scale-125 transition-transform" />
+                      </div>
+                    )}
                   </Button>
+                  
+                  {/* Trust Badges */}
+                  <div className="mt-12 flex flex-col items-center gap-6">
+                    <div className="flex gap-8 items-center opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-help">
+                      <ShieldCheck className="w-6 h-6 text-gray-900" />
+                      <Truck className="w-6 h-6 text-gray-900" />
+                      <ShieldCheck className="w-6 h-6 text-gray-900" />
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-[10px] text-gray-300 uppercase tracking-[0.4em] font-black">Secure Checkout</p>
+                      <div className="h-1 w-12 bg-gray-50 rounded-full" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

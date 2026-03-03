@@ -9,6 +9,8 @@ export function useAuth() {
   }>({
     queryKey: ["/api/auth/user"],
     retry: false,
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 
   const logout = () => {
