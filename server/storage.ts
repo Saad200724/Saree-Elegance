@@ -1,17 +1,16 @@
 import { db } from "./db";
 import {
-  products, reviews, cartItems, orders, orderItems,
+  products, reviews, cartItems, orders, orderItems, users,
   type Product, type InsertProduct,
   type Review, type InsertReview,
   type CartItem, type InsertCartItem,
   type Order, type InsertOrder
 } from "@shared/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
 import { MongoProduct, MongoReview, MongoUser } from "./lib/mongodb";
 import { type UpsertUser, type User } from "@shared/models/auth";
 
-export interface IStorage extends IAuthStorage {
+export interface IStorage {
   getProducts(category?: string, search?: string): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   getReviews(productId: number): Promise<Review[]>;
@@ -22,16 +21,36 @@ export interface IStorage extends IAuthStorage {
   removeFromCart(id: number): Promise<void>;
   clearCart(userId?: string, sessionId?: string): Promise<void>;
   createOrder(order: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order>;
+  getOrders(): Promise<(Order & { items: any[] })[]>;
+  updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<void>;
   syncWithMongo(): Promise<void>;
+  upsertUser(user: UpsertUser): Promise<User>;
 }
 
-export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthStorage }) implements IStorage {
+export class DatabaseStorage implements IStorage {
   async getProducts(category?: string, search?: string): Promise<Product[]> {
     let query = db.select().from(products);
     if (category) {
       query = query.where(eq(products.category, category)) as any;
     }
     return await query.orderBy(desc(products.createdAt));
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [newProduct] = await db.insert(products).values(product).returning();
+    return newProduct;
+  }
+
+  async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [updated] = await db.update(products).set(product).where(eq(products.id, id)).returning();
+    return updated;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
@@ -138,8 +157,36 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
     });
   }
 
+  async getOrders(): Promise<(Order & { items: any[] })[]> {
+    const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+    const results = [];
+    for (const order of allOrders) {
+      const items = await db.select({
+        id: orderItems.id,
+        orderId: orderItems.orderId,
+        productId: orderItems.productId,
+        quantity: orderItems.quantity,
+        price: orderItems.price,
+        product: products,
+      })
+      .from(orderItems)
+      .innerJoin(products, eq(orderItems.productId, products.id))
+      .where(eq(orderItems.orderId, order.id));
+      results.push({ ...order, items });
+    }
+    return results;
+  }
+
+  async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
+    const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+    return updated;
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const user = await super.upsertUser(userData);
+    const [user] = await db.insert(users).values(userData).onConflictDoUpdate({
+      target: users.email,
+      set: userData
+    }).returning();
     // Sync to Mongo
     try {
       await MongoUser.findOneAndUpdate(

@@ -3,17 +3,12 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { MongoUser } from "./lib/mongodb";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Setup Auth FIRST
-  await setupAuth(app);
-  registerAuthRoutes(app);
-
   // === MongoDB Auth Routes ===
   app.post("/api/register", async (req, res) => {
     try {
@@ -45,6 +40,40 @@ export async function registerRoutes(
     const search = req.query.search as string | undefined;
     const products = await storage.getProducts(category, search);
     res.json(products);
+  });
+
+  app.post(api.admin.products.create.path, async (req, res) => {
+    try {
+      const input = api.admin.products.create.input.parse(req.body);
+      const product = await storage.createProduct(input);
+      res.status(201).json(product);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch(api.admin.products.update.path, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const input = api.admin.products.update.input.parse(req.body);
+      const updated = await storage.updateProduct(id, input);
+      if (!updated) return res.status(404).json({ message: "Product not found" });
+      res.json(updated);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete(api.admin.products.delete.path, async (req, res) => {
+    const id = parseInt(req.params.id);
+    await storage.deleteProduct(id);
+    res.status(204).send();
   });
 
   app.get(api.products.get.path, async (req, res) => {
@@ -94,7 +123,6 @@ export async function registerRoutes(
         userId,
         sessionId,
       });
-      console.log('Final item returned from storage:', item);
       res.status(201).json(item);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -117,6 +145,19 @@ export async function registerRoutes(
   });
 
   // === Orders ===
+  app.get(api.orders.list.path, async (req, res) => {
+    const orders = await storage.getOrders();
+    res.json(orders);
+  });
+
+  app.patch(api.orders.updateStatus.path, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const input = api.orders.updateStatus.input.parse(req.body);
+    const updated = await storage.updateOrderStatus(id, input.status);
+    if (!updated) return res.status(404).json({ message: "Order not found" });
+    res.json(updated);
+  });
+
   app.post(api.orders.create.path, async (req, res) => {
     try {
       const input = api.orders.create.input.parse(req.body);

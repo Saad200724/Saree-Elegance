@@ -1,6 +1,13 @@
 import mongoose, { Schema } from 'mongoose';
+import dotenv from 'dotenv';
 
-const uri = process.env.MONGODB_URI || "mongodb+srv://saadbintofayel:Saad1234@chandrabati.byubzpi.mongodb.net/?appName=Chandrabati";
+dotenv.config();
+
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  throw new Error("MONGODB_URI is not defined in .env file");
+}
 
 export const connectToMongoDB = async () => {
   try {

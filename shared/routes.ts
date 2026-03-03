@@ -92,6 +92,21 @@ export const api = {
     },
   },
   orders: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/orders' as const,
+      responses: {
+        200: z.array(z.custom<typeof orders.$inferSelect & { items: (typeof orderItems.$inferSelect & { product: typeof products.$inferSelect })[] }>()),
+      },
+    },
+    updateStatus: {
+      method: 'PATCH' as const,
+      path: '/api/orders/:id/status' as const,
+      input: z.object({ status: z.string() }),
+      responses: {
+        200: z.custom<typeof orders.$inferSelect>(),
+      },
+    },
     create: {
       method: 'POST' as const,
       path: '/api/orders' as const,
@@ -101,6 +116,33 @@ export const api = {
         400: errorSchemas.validation,
       },
     },
+  },
+  admin: {
+    products: {
+      create: {
+        method: 'POST' as const,
+        path: '/api/admin/products' as const,
+        input: insertProductSchema,
+        responses: {
+          201: z.custom<typeof products.$inferSelect>(),
+        },
+      },
+      update: {
+        method: 'PATCH' as const,
+        path: '/api/admin/products/:id' as const,
+        input: insertProductSchema.partial(),
+        responses: {
+          200: z.custom<typeof products.$inferSelect>(),
+        },
+      },
+      delete: {
+        method: 'DELETE' as const,
+        path: '/api/admin/products/:id' as const,
+        responses: {
+          204: z.void(),
+        },
+      },
+    }
   }
 };
 
