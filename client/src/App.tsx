@@ -21,6 +21,7 @@ import Contact from "@/pages/Contact";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Admin from "@/pages/Admin";
+import Dashboard from "@/pages/Dashboard";
 import MessengerFloating from "@/components/MessengerFloating";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Login} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />
       <Route path="/shop" component={Shop} />
       <Route path="/sarees" component={Sarees} />

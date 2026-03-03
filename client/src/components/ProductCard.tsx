@@ -28,11 +28,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-50 group-hover:bg-white transition-colors duration-500">
           <img 
             src={product.imageUrl} 
             alt={product.name}
-            className="w-full h-full object-contain object-center bg-white transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
           />
           
           {/* Quick Add Overlay */}

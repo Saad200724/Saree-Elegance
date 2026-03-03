@@ -61,7 +61,10 @@ export default function Checkout() {
       userId: user?.id,
       totalAmount: total.toString(),
     }, {
-      onSuccess: () => setLocation("/success")
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+        setLocation("/success");
+      }
     });
   };
 

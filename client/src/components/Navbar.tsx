@@ -108,6 +108,12 @@ export default function Navbar() {
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="flex items-center w-full">
+                          <Grid className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => logout()}>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Log out</span>

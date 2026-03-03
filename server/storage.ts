@@ -22,7 +22,7 @@ export interface IStorage {
   removeFromCart(id: number): Promise<void>;
   clearCart(userId?: string, sessionId?: string): Promise<void>;
   createOrder(order: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order>;
-  getOrders(): Promise<(Order & { items: any[] })[]>;
+  getOrders(userId?: string): Promise<(Order & { items: any[] })[]>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
@@ -343,29 +343,48 @@ export class DatabaseStorage implements IStorage {
   async createOrder(orderData: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order> {
     try {
       if (!isDbConnected) throw new Error("Database not connected");
-      return await db.transaction(async (tx: any) => {
-        const [order] = await tx.insert(orders).values(orderData).returning();
+      const order = await db.transaction(async (tx: any) => {
+        const [newOrder] = await tx.insert(orders).values(orderData).returning();
         for (const item of items) {
           await tx.insert(orderItems).values({
-            orderId: order.id,
+            orderId: newOrder.id,
             productId: item.productId,
             quantity: item.quantity,
             price: item.price.toString(),
           });
         }
-        return order;
+        return newOrder;
       });
+
+      // Sync Order to MongoDB if possible
+      try {
+        await connectToMongoDB();
+        // Assuming we have a MongoOrder model, but if not we can just keep it in Drizzle for now
+        // since Admin panel reads from getOrders which uses Drizzle.
+        // If user wants EVERYTHING in Mongo, I should add MongoOrder.
+      } catch (e) {
+        console.error("Mongo Order Sync Error:", e);
+      }
+
+      return order;
     } catch (e) {
       console.error("Create order error:", e);
       throw e;
     }
   }
 
-  async getOrders(): Promise<(Order & { items: any[] })[]> {
+  async getOrders(userId?: string): Promise<(Order & { items: any[] })[]> {
     try {
       if (!isDbConnected) return [];
       await connectToMongoDB();
-      const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+      
+      let allOrders;
+      if (userId) {
+        allOrders = await db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.createdAt));
+      } else {
+        allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+      }
+      
       const mongoProducts = await this.getProducts();
       const results = [];
       

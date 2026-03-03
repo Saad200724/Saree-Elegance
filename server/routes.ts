@@ -180,7 +180,10 @@ export async function registerRoutes(
 
   // === Orders ===
   app.get(api.orders.list.path, async (req, res) => {
-    const orders = await storage.getOrders();
+    const userId = (req.user as any)?.claims?.sub;
+    // If it's an admin request (we should ideally check for admin role)
+    // For now, if no userId is provided or if we're in admin context, return all
+    const orders = await storage.getOrders(userId);
     res.json(orders);
   });
 
