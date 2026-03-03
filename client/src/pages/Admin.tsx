@@ -14,17 +14,53 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Pencil, Trash2, CheckCircle, Clock, Truck } from "lucide-react";
 
 export default function Admin() {
+  const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === "Saree4you") {
+      setAuthenticated(true);
+    } else {
+      toast({ title: "Invalid password", variant: "destructive" });
+    }
+  };
+
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: [api.products.list.path],
+    enabled: authenticated,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery<(Order & { items: any[] })[]>({
     queryKey: [api.orders.list.path],
+    enabled: authenticated,
   });
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Admin Access</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <Input
+                type="password"
+                placeholder="Enter admin password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Button type="submit" className="w-full">Login</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const createMutation = useMutation({
     mutationFn: async (newProduct: any) => {
