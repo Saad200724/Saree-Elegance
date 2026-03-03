@@ -156,7 +156,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 flex items-center justify-around h-16 px-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 flex items-center justify-around h-16 px-2 shadow-none">
         <Link href="/" className={`flex flex-col items-center gap-1 ${location === "/" ? "text-accent" : "text-gray-500"}`}>
           <Home className="h-5 w-5" />
           <span className="text-[10px] font-medium">Home</span>
@@ -165,13 +165,17 @@ export default function Navbar() {
           <Grid className="h-5 w-5" />
           <span className="text-[10px] font-medium">Categories</span>
         </Link>
-        <div className="relative mt">
-          <Link href="/" className="bg-white rounded-full p-1 shadow-md border border-gray-50">
-             <div className="p-1 rounded-full">
-               <img src="/logo.png" alt="Home" className="h-14 w-14 object-contain" />
-             </div>
-          </Link>
-        </div>
+        <Link href="/cart" className={`flex flex-col items-center gap-1 ${location === "/cart" ? "text-accent" : "text-gray-500"}`}>
+          <div className="relative">
+            <ShoppingBag className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-accent text-white text-[8px] font-bold h-3 w-3 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-medium">Cart</span>
+        </Link>
         <Link href="/login" className={`flex flex-col items-center gap-1 ${location === "/login" ? "text-accent" : "text-gray-500"}`}>
           <User className="h-5 w-5" />
           <span className="text-[10px] font-medium">Profile</span>
