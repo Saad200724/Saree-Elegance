@@ -166,9 +166,9 @@ export default function Navbar() {
           <span className="text-[10px] font-medium">Categories</span>
         </Link>
         <div className="relative -mt-8">
-          <Link href="/" className="bg-white rounded-full p-1 border border-gray-100 shadow-lg">
-             <div className="bg-primary p-3 rounded-full">
-               <img src="/logo.png" alt="Home" className="h-6 w-6 object-contain invert" />
+          <Link href="/" className="bg-transparent rounded-full p-1">
+             <div className="p-3 rounded-full">
+               <img src="/logo.png" alt="Home" className="h-10 w-10 object-contain" />
              </div>
           </Link>
         </div>

@@ -38,7 +38,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-[25vh] md:h-[75vh] w-full overflow-hidden rounded-b-3xl bg-[#4a3728]">
         <div 
-          className="absolute inset-0 bg-contain md:bg-cover bg-center bg-no-repeat md:bg-fixed"
+          className="absolute inset-0 bg-contain bg-center bg-no-repeat md:bg-fixed"
           style={{ backgroundImage: `url(/hero-bg.jpg)` }}
         ></div>
         
@@ -143,8 +143,13 @@ export default function Home() {
           style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8">
-            <div className="flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
+            <motion.div 
+              initial={{ opacity: 0, rotateY: 90 }}
+              whileInView={{ opacity: 1, rotateY: 0 }}
+              transition={{ duration: 0.8 }}
+              className="flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100"
+            >
               <div className="flex mb-1 md:mb-4 text-yellow-400">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-2 h-2 md:w-4 md:h-4 fill-current" />
@@ -152,8 +157,13 @@ export default function Home() {
               </div>
               <p className="text-gray-700 italic mb-2 md:mb-4 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">"চন্দ্রাবতীর শাড়িগুলোর মান সত্যিই অসাধারণ। রঙের কাজ আর কাপড়ের গুণগত মান আমাকে মুগ্ধ করেছে।"</p>
               <h4 className="font-heading font-bold text-primary text-[8px] md:text-base">— সুস্মিতা</h4>
-            </div>
-            <div className="flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, rotateY: 90 }}
+              whileInView={{ opacity: 1, rotateY: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100"
+            >
               <div className="flex mb-1 md:mb-4 text-yellow-400">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-2 h-2 md:w-4 md:h-4 fill-current" />
@@ -161,8 +171,13 @@ export default function Home() {
               </div>
               <p className="text-gray-700 italic mb-2 md:mb-4 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">"বিয়ের জন্য এখান থেকে লেহেঙ্গা নিয়েছিলাম। ডিজাইনটা ইউনিক ছিল, ফিটিংটাও পারফেক্ট।"</p>
               <h4 className="font-heading font-bold text-primary text-[8px] md:text-base">— নুসরাত</h4>
-            </div>
-            <div className="flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, rotateY: 90 }}
+              whileInView={{ opacity: 1, rotateY: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="col-span-2 md:col-span-1 flex flex-col items-center text-center p-2 md:p-6 rounded-xl md:rounded-2xl bg-gray-50/50 border border-gray-100"
+            >
               <div className="flex mb-1 md:mb-4 text-yellow-400">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star key={i} className="w-2 h-2 md:w-4 md:h-4 fill-current" />
@@ -170,7 +185,7 @@ export default function Home() {
               </div>
               <p className="text-gray-700 italic mb-2 md:mb-4 text-[10px] md:text-sm line-clamp-3 md:line-clamp-none">"অনলাইনে অর্ডার করতে প্রথমে ভয় পাচ্ছিলাম, কিন্তু চন্দ্রাবতী আমার বিশ্বাস জয় করে নিয়েছে।"</p>
               <h4 className="font-heading font-bold text-primary text-[8px] md:text-base">— ফারহানা</h4>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
