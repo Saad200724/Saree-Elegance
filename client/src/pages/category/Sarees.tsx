@@ -19,7 +19,7 @@ export default function Sarees() {
     >
       <Navbar />
 
-      <section className="relative h-[40vh] w-full overflow-hidden rounded-b-3xl bg-gray-900">
+      <section className="relative h-[25vh] md:h-[40vh] w-full overflow-hidden rounded-b-3xl bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${bannerImg})` }}
@@ -27,20 +27,20 @@ export default function Sarees() {
           <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative h-full max-w-7xl mx-auto px-4 flex flex-col justify-center items-center text-white text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 font-heading">Sarees</h1>
-          <p className="text-lg max-w-2xl opacity-90">Timeless elegance woven into every thread. Explore our exclusive silk and designer saree collection.</p>
+          <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4 font-heading">Sarees</h1>
+          <p className="text-sm md:text-lg max-w-2xl opacity-90 px-4">Timeless elegance woven into every thread.</p>
         </div>
       </section>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-12 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {[1,2,3,4,5,6,7,8].map(i => (
-              <div key={i} className="h-96 bg-gray-100 animate-pulse rounded-xl" />
+              <div key={i} className="h-48 md:h-96 bg-gray-100 animate-pulse rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             {products?.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
