@@ -1,6 +1,12 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { api, type InsertOrder } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
+
+export function useOrders() {
+  return useQuery<(Order & { items: any[] })[]>({
+    queryKey: [api.orders.list.path],
+  });
+}
 
 export function useCreateOrder() {
   const queryClient = useQueryClient();
@@ -21,7 +27,8 @@ export function useCreateOrder() {
       return api.orders.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.cart.list.path] }); // Cart usually cleared on backend
+      queryClient.invalidateQueries({ queryKey: [api.cart.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
       toast({
         title: "Order Placed!",
         description: "Thank you for your purchase.",

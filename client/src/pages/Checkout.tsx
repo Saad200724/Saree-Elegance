@@ -13,14 +13,17 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
 
-const checkoutSchema = insertOrderSchema.pick({
-  guestName: true,
-  guestEmail: true,
-  guestPhone: true,
-  address: true,
-  totalAmount: true // We'll set this programmatically
-}).extend({
-  guestEmail: z.string().email().optional().or(z.literal("")),
+const checkoutSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  email: z.string().email("Invalid email address"),
+  division: z.string().min(1, "Division is required"),
+  district: z.string().min(1, "District is required"),
+  upazila: z.string().min(1, "Upazila/Thana is required"),
+  address: z.string().min(1, "Full address is required"),
+  orderNotes: z.string().optional(),
+  paymentMethod: z.enum(["Cash on Delivery", "RupantorPay"]),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
@@ -32,22 +35,27 @@ export default function Checkout() {
   const [, setLocation] = useLocation();
 
   const subtotal = cartItems?.reduce((acc, item) => acc + (Number(item.product.price) * item.quantity), 0) || 0;
-  const shipping = subtotal > 5000 ? 0 : 100;
-  const total = subtotal + shipping;
+  const deliveryFee = 130;
+  const total = subtotal + deliveryFee;
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      guestName: user ? `${user.firstName} ${user.lastName}` : "",
-      guestEmail: user?.email || "",
-      guestPhone: "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      phone: "",
+      division: "",
+      district: "",
+      upazila: "",
       address: "",
-      totalAmount: total.toString(),
+      orderNotes: "",
+      paymentMethod: "Cash on Delivery",
     },
   });
 
   if (authLoading || cartLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="animate-spin" /></div>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="animate-spin text-primary" /></div>;
   }
 
   if (!cartItems || cartItems.length === 0) {
@@ -58,61 +66,52 @@ export default function Checkout() {
   const onSubmit = (data: CheckoutFormValues) => {
     createOrder.mutate({
       ...data,
-      userId: user?.id,
       totalAmount: total.toString(),
+      status: 'pending',
     }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-        setLocation("/success");
+      onSuccess: (order) => {
+        setLocation(`/success?orderId=${order.id}`);
       }
     });
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
       <Navbar />
       
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-8 text-center">Checkout</h1>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-[#7FB432] rounded-full flex items-center justify-center">
+               <span className="text-white font-bold text-xs">LOGO</span>
+            </div>
+            <h1 className="text-2xl font-bold text-[#2D3E50]">Checkout</h1>
+          </div>
+          <div className="flex items-center gap-2 text-[#2D3E50] font-medium">
+             <span className="text-lg">📞</span>
+             <span>01405-045023</span>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          
-          {/* Form */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-             <h2 className="font-heading text-xl font-semibold mb-6">Shipping Details</h2>
-             
-             <Form {...form}>
-               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                 
-                 {!user && (
-                    <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm mb-6">
-                      Already have an account? <a href="/api/login" className="font-bold underline">Login</a> for faster checkout.
-                    </div>
-                 )}
-
-                 <FormField
-                    control={form.control}
-                    name="guestName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Column: Order Details & Address */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-[#F4F8EF] px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-[#3A5A1F] font-bold text-lg">Order Details</h2>
+                </div>
+                <div className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
-                      name="guestEmail"
+                      name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="text-gray-700 font-semibold">First Name *</FormLabel>
                           <FormControl>
-                            <Input placeholder="john@example.com" {...field} />
+                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -120,17 +119,99 @@ export default function Checkout() {
                     />
                     <FormField
                       control={form.control}
-                      name="guestPhone"
+                      name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone</FormLabel>
+                          <FormLabel className="text-gray-700 font-semibold">Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="+1 234 567 890" {...field} />
+                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-semibold">Phone *</FormLabel>
+                          <FormControl>
+                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-semibold">Email Address *</FormLabel>
+                          <FormControl>
+                            <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="pt-4">
+                    <h3 className="text-[#3A5A1F] font-bold text-lg mb-6">Customer Address</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="division"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold">Division *</FormLabel>
+                            <select 
+                              className="flex h-12 w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                              {...field}
+                            >
+                              <option value="">Select Division</option>
+                              <option value="Dhaka">Dhaka</option>
+                              <option value="Chittagong">Chittagong</option>
+                            </select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="district"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold">District *</FormLabel>
+                            <select 
+                              className="flex h-12 w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                              {...field}
+                            >
+                              <option value="">Select District</option>
+                              <option value="Dhaka">Dhaka</option>
+                            </select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="upazila"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700 font-semibold">Upazila/Thana *</FormLabel>
+                            <FormControl>
+                              <Input className="bg-gray-50 border-gray-200 h-12" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
 
                   <FormField
@@ -138,64 +219,121 @@ export default function Checkout() {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Shipping Address</FormLabel>
+                        <FormLabel className="text-gray-700 font-semibold">Full Address *</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main St, City, Country" {...field} />
+                          <textarea 
+                            className="flex min-h-[100px] w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="orderNotes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-semibold">Order Notes (Optional)</FormLabel>
+                        <FormControl>
+                          <textarea 
+                            placeholder="Add any special instructions for your order"
+                            className="flex min-h-[80px] w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7FB432]"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Order Summary & Payment */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-[#F4F8EF] px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-[#3A5A1F] font-bold text-lg">Order Summary</h2>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4 mb-6">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="flex gap-4 items-center">
+                        <div className="w-16 h-16 border border-gray-100 rounded bg-gray-50 p-1 flex-shrink-0">
+                          <img src={item.product.imageUrl} className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity} x ৳{Number(item.product.price)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-3 border-t border-gray-100 pt-4">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal</span>
+                      <span className="font-semibold">৳{subtotal}</span>
+                    </div>
+                    <div className="text-[#3A5A1F] text-sm cursor-pointer hover:underline">
+                      Have a coupon? Click here to enter your code
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Delivery Fee</span>
+                      <span className="font-semibold">৳{deliveryFee}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold text-[#3A5A1F] border-t border-gray-100 pt-3">
+                      <span>Total</span>
+                      <span>৳{total}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 space-y-4">
+                    <p className="font-bold text-gray-700">Payment Method</p>
+                    <FormField
+                      control={form.control}
+                      name="paymentMethod"
+                      render={({ field }) => (
+                        <div className="space-y-3">
+                          <div 
+                            className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${field.value === "Cash on Delivery" ? "bg-[#FFFCEB] border-[#FFD33D]" : "border-gray-200"}`}
+                            onClick={() => field.onChange("Cash on Delivery")}
+                          >
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${field.value === "Cash on Delivery" ? "border-[#FFD33D]" : "border-gray-300"}`}>
+                              {field.value === "Cash on Delivery" && <div className="w-2 h-2 rounded-full bg-[#FFD33D]" />}
+                            </div>
+                            <span className="font-medium text-gray-900">Cash on Delivery</span>
+                          </div>
+                          <div 
+                            className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${field.value === "RupantorPay" ? "bg-[#FFFCEB] border-[#FFD33D]" : "border-gray-200"}`}
+                            onClick={() => field.onChange("RupantorPay")}
+                          >
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${field.value === "RupantorPay" ? "border-[#FFD33D]" : "border-gray-300"}`}>
+                              {field.value === "RupantorPay" && <div className="w-2 h-2 rounded-full bg-[#FFD33D]" />}
+                            </div>
+                            <span className="font-medium text-gray-900 text-sm">RupantorPay (bKash, Nagad, Rocket)</span>
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </div>
+
                   <Button 
                     type="submit" 
                     disabled={createOrder.isPending} 
-                    size="lg" 
-                    className="w-full bg-accent hover:bg-accent/90 mt-4"
+                    className="w-full h-14 bg-[#FFD33D] hover:bg-[#FFD33D]/90 text-gray-900 font-bold text-lg rounded-lg mt-8"
                   >
-                    {createOrder.isPending ? "Processing..." : `Pay ৳${total.toLocaleString()}`}
+                    {createOrder.isPending ? "Placing Order..." : "Place Order Now"}
                   </Button>
-               </form>
-             </Form>
-          </div>
-
-          {/* Order Review */}
-          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-               <h3 className="font-heading font-semibold text-lg mb-4">Your Order</h3>
-               <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                 {cartItems.map((item) => (
-                   <div key={item.id} className="flex gap-4">
-                     <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
-                       <img src={item.product.imageUrl} className="w-full h-full object-cover" />
-                     </div>
-                     <div>
-                       <p className="font-medium text-sm text-gray-900">{item.product.name}</p>
-                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
-                       <p className="text-sm font-semibold">৳{Number(item.product.price).toLocaleString()}</p>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-               
-               <div className="border-t border-gray-100 mt-6 pt-4 space-y-2">
-                 <div className="flex justify-between text-sm">
-                    <span>Subtotal</span>
-                    <span>৳{subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span>৳{shipping.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg pt-2">
-                    <span>Total</span>
-                    <span>৳{total.toLocaleString()}</span>
-                  </div>
-               </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-        </div>
+          </form>
+        </Form>
       </main>
       <Footer />
     </div>

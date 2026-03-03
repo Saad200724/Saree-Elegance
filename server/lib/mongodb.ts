@@ -69,3 +69,32 @@ const UserSchema: Schema = new Schema({
 });
 
 export const MongoUser = mongoose.models.User || mongoose.model('User', UserSchema);
+
+const OrderSchema: Schema = new Schema({
+  userId: { type: String },
+  guestName: { type: String },
+  guestEmail: { type: String },
+  guestPhone: { type: String },
+  firstName: { type: String },
+  lastName: { type: String },
+  phone: { type: String },
+  email: { type: String },
+  division: { type: String },
+  district: { type: String },
+  upazila: { type: String },
+  address: { type: String, required: true },
+  orderNotes: { type: String },
+  totalAmount: { type: String, required: true },
+  status: { type: String, default: 'pending' },
+  paymentMethod: { type: String, default: 'Cash on Delivery' },
+  items: [{
+    productId: { type: Number, required: true },
+    quantity: { type: Number, required: true },
+    price: { type: String, required: true },
+    name: { type: String },
+    imageUrl: { type: String }
+  }],
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const MongoOrder = mongoose.models.Order || mongoose.model('Order', OrderSchema);

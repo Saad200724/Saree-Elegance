@@ -110,7 +110,19 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/orders' as const,
-      input: insertOrderSchema,
+      input: z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+        email: z.string(),
+        phone: z.string(),
+        division: z.string(),
+        district: z.string(),
+        upazila: z.string(),
+        address: z.string(),
+        orderNotes: z.string().optional(),
+        paymentMethod: z.string(),
+        totalAmount: z.string(),
+      }),
       responses: {
         201: z.custom<typeof orders.$inferSelect>(),
         400: errorSchemas.validation,

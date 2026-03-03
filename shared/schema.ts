@@ -50,12 +50,18 @@ export const cartItems = pgTable("cart_items", {
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: text("user_id"),
-  guestName: text("guest_name"),
-  guestEmail: text("guest_email"),
-  guestPhone: text("guest_phone"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email"),
+  phone: text("phone"),
+  division: text("division"),
+  district: text("district"),
+  upazila: text("upazila"),
   address: text("address").notNull(),
+  orderNotes: text("order_notes"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").notNull().default("pending"), // pending, processing, shipped, delivered
+  paymentMethod: text("payment_method").default("Cash on Delivery"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

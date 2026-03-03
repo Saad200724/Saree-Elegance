@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Product, Order, api, buildUrl } from "@shared/routes";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -351,51 +351,196 @@ export default function Admin() {
         </TabsContent>
 
         <TabsContent value="orders">
-          <h2 className="text-2xl font-semibold mb-6">Order Management</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Order Management</h2>
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: [api.orders.list.path] })}>
+              Refresh Orders
+            </Button>
+          </div>
           {ordersLoading ? (
             <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
           ) : (
-            <div className="grid gap-6">
-              {orders?.map((order) => (
-                <Card key={order.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Order #{order.id}</CardTitle>
-                    <Select defaultValue={order.status} onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-bold">Customer Info</p>
-                        <p className="text-sm">{order.guestName || "User ID: " + order.userId}</p>
-                        <p className="text-sm">{order.guestPhone}</p>
-                        <p className="text-sm text-muted-foreground">{order.address}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold">Items</p>
-                        <ul className="text-sm space-y-1">
-                          {order.items.map((item, idx) => (
-                            <li key={idx} className="flex justify-between">
-                              <span>{item.product.name} x {item.quantity}</span>
-                              <span>৳{item.price}</span>
-                            </li>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Address</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orders?.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-xs">#{order.id}</TableCell>
+                      <TableCell>
+                        <div className="font-medium text-sm">{order.firstName} {order.lastName}</div>
+                        <div className="text-xs text-gray-500">{order.phone}</div>
+                        <div className="text-xs text-gray-400">{order.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs max-w-[200px]">
+                          <span className="font-semibold">{order.division}, {order.district}</span><br/>
+                          {order.upazila}<br/>
+                          <span className="text-gray-500">{order.address}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {order.items.map((item: any, idx: number) => (
+                            <div key={idx} className="text-xs flex justify-between gap-2">
+                              <span className="truncate max-w-[100px]">{item.product?.name}</span>
+                              <span className="text-gray-500">x{item.quantity}</span>
+                            </div>
                           ))}
-                        </ul>
-                        <p className="text-sm font-bold mt-2 pt-2 border-t">Total: ৳{order.totalAmount}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-bold text-sm text-[#3A5A1F]">৳{Number(order.totalAmount).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          className="capitalize text-[10px] px-2 py-0"
+                          variant={
+                            order.status === "delivered" ? "default" : 
+                            order.status === "pending" ? "destructive" : "secondary"
+                          }
+                        >
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-2">
+                          <Select
+                            defaultValue={order.status}
+                            onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-[10px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="processing">Processing</SelectItem>
+                              <SelectItem value="shipped">Shipped</SelectItem>
+                              <SelectItem value="delivered">Delivered</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-[10px] font-bold"
+                            onClick={() => {
+                              const win = window.open('', '_blank');
+                              if (win) {
+                                win.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Invoice - ${order.id}</title>
+                                      <style>
+                                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+                                        .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); }
+                                        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #7FB432; padding-bottom: 20px; margin-bottom: 30px; }
+                                        .logo { color: #7FB432; font-weight: bold; font-size: 24px; }
+                                        .details { display: grid; grid-template-cols: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+                                        .details h3 { border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; color: #3A5A1F; }
+                                        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                                        th { background: #F4F8EF; text-align: left; padding: 12px; border-bottom: 2px solid #7FB432; }
+                                        td { padding: 12px; border-bottom: 1px solid #eee; }
+                                        .total-section { float: right; width: 250px; }
+                                        .total-row { display: flex; justify-content: space-between; padding: 5px 0; }
+                                        .grand-total { font-size: 1.4em; font-weight: bold; color: #3A5A1F; border-top: 2px solid #7FB432; margin-top: 10px; padding-top: 10px; }
+                                        .footer { margin-top: 80px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+                                        @media print { .no-print { display: none; } }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <div class="invoice-box">
+                                        <div class="header">
+                                          <div>
+                                            <div class="logo">LOGO</div>
+                                            <p>Order ID: <strong>#${order.id}</strong></p>
+                                            <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                                          </div>
+                                          <div style="text-align: right">
+                                            <h2 style="color: #3A5A1F; margin: 0;">INVOICE</h2>
+                                            <p>Your Store Name<br>Contact: 01405-045023<br>Dhaka, Bangladesh</p>
+                                          </div>
+                                        </div>
+                                        <div class="details">
+                                          <div>
+                                            <h3>Billing To:</h3>
+                                            <p><strong>${order.firstName} ${order.lastName}</strong><br>
+                                            Phone: ${order.phone}<br>
+                                            Email: ${order.email}</p>
+                                          </div>
+                                          <div>
+                                            <h3>Shipping Address:</h3>
+                                            <p>${order.address}<br>
+                                            ${order.upazila}, ${order.district}<br>
+                                            ${order.division}</p>
+                                          </div>
+                                        </div>
+                                        <table>
+                                          <thead>
+                                            <tr>
+                                              <th>Product Details</th>
+                                              <th style="text-align: center">Quantity</th>
+                                              <th style="text-align: right">Unit Price</th>
+                                              <th style="text-align: right">Amount</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            ${order.items.map((item: any) => `
+                                              <tr>
+                                                <td>${item.product?.name || 'Product'}</td>
+                                                <td style="text-align: center">${item.quantity}</td>
+                                                <td style="text-align: right">৳${Number(item.price).toLocaleString()}</td>
+                                                <td style="text-align: right">৳${(item.quantity * Number(item.price)).toLocaleString()}</td>
+                                              </tr>
+                                            `).join('')}
+                                          </tbody>
+                                        </table>
+                                        <div class="total-section">
+                                          <div class="total-row">
+                                            <span>Subtotal:</span>
+                                            <span>৳${(Number(order.totalAmount) - 130).toLocaleString()}</span>
+                                          </div>
+                                          <div class="total-row">
+                                            <span>Delivery Fee:</span>
+                                            <span>৳130</span>
+                                          </div>
+                                          <div class="total-row grand-total">
+                                            <span>Total:</span>
+                                            <span>৳${Number(order.totalAmount).toLocaleString()}</span>
+                                          </div>
+                                          <p style="font-size: 11px; margin-top: 15px;">Payment Method: <strong>${order.paymentMethod}</strong></p>
+                                        </div>
+                                        <div style="clear: both;"></div>
+                                        <div class="footer">
+                                          <p>This is a computer generated invoice and does not require a signature.</p>
+                                          <p>Thank you for shopping with us!</p>
+                                        </div>
+                                      </div>
+                                      <div class="no-print" style="margin-top: 20px; text-align: center;">
+                                        <button onclick="window.print()" style="padding: 10px 20px; background: #7FB432; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Print Invoice</button>
+                                      </div>
+                                    </body>
+                                  </html>
+                                `);
+                                win.document.close();
+                              }
+                            }}
+                          >
+                            Invoice
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </TabsContent>
