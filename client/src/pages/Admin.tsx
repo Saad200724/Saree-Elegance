@@ -11,23 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, CheckCircle, Clock, Truck } from "lucide-react";
+import { Link } from "wouter";
+import { Loader2, Plus, Pencil, Trash2, CheckCircle, Clock, Truck, Store, Upload } from "lucide-react";
 
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === "Saree4you") {
-      setAuthenticated(true);
-    } else {
-      toast({ title: "Invalid password", variant: "destructive" });
-    }
-  };
 
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: [api.products.list.path],
@@ -38,6 +31,38 @@ export default function Admin() {
     queryKey: [api.orders.list.path],
     enabled: authenticated,
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      
+      // Update the input field directly
+      const imageUrlInput = document.querySelector('input[name="imageUrl"]') as HTMLInputElement;
+      if (imageUrlInput) {
+        imageUrlInput.value = data.url;
+        // Trigger a manual input event so React picked up the change if it were controlled,
+        // though here we use uncontrolled with defaultValue + FormData on submit.
+        const event = new Event('input', { bubbles: true });
+        imageUrlInput.dispatchEvent(event);
+      }
+      toast({ title: "Image uploaded successfully" });
+    } catch (err) {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (!authenticated) {
     return (
@@ -64,12 +89,15 @@ export default function Admin() {
 
   const createMutation = useMutation({
     mutationFn: async (newProduct: any) => {
-      const res = await fetch(api.admin.products.create.path, {
+      const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProduct),
       });
-      if (!res.ok) throw new Error("Failed to create product");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to create product");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -81,12 +109,15 @@ export default function Admin() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await fetch(buildUrl(api.admin.products.update.path, { id }), {
+      const res = await fetch(`/api/admin/products/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to update product");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to update product");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -149,7 +180,14 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Link href="/">
+          <Button variant="outline">
+            <Store className="mr-2 h-4 w-4" /> Go to Store
+          </Button>
+        </Link>
+      </div>
 
       <Tabs defaultValue="products">
         <TabsList className="mb-8">
@@ -202,9 +240,24 @@ export default function Admin() {
                       <label className="text-sm font-medium">Stock</label>
                       <Input name="stock" type="number" defaultValue={editingProduct?.stock || 0} required />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Image URL</label>
-                      <Input name="imageUrl" defaultValue={editingProduct?.imageUrl} required />
+                    <div className="space-y-2 col-span-2">
+                      <label className="text-sm font-medium">Product Image</label>
+                      <div className="flex gap-2">
+                        <Input name="imageUrl" defaultValue={editingProduct?.imageUrl} placeholder="Image URL" required />
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            className="absolute inset-0 opacity-0 cursor-pointer w-10"
+                            onChange={handleFileUpload}
+                            accept="image/*"
+                            disabled={uploading}
+                          />
+                          <Button type="button" variant="outline" size="icon" disabled={uploading}>
+                            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Enter a URL or upload an image file</p>
                     </div>
                   </div>
                   <div className="space-y-2">

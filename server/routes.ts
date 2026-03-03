@@ -42,10 +42,17 @@ export async function registerRoutes(
     res.json(products);
   });
 
-  app.post(api.admin.products.create.path, async (req, res) => {
+  // === Admin Products ===
+  app.post("/api/admin/products", async (req, res) => {
     try {
-      const input = api.admin.products.create.input.parse(req.body);
+      const input = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(input);
+      // Sync to Mongo after creation
+      try {
+        await storage.syncWithMongo();
+      } catch (e) {
+        console.error("Post-create Mongo sync error:", e);
+      }
       res.status(201).json(product);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -55,12 +62,18 @@ export async function registerRoutes(
     }
   });
 
-  app.patch(api.admin.products.update.path, async (req, res) => {
+  app.patch("/api/admin/products/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const input = api.admin.products.update.input.parse(req.body);
+      const input = insertProductSchema.partial().parse(req.body);
       const updated = await storage.updateProduct(id, input);
       if (!updated) return res.status(404).json({ message: "Product not found" });
+      // Sync to Mongo after update
+      try {
+        await storage.syncWithMongo();
+      } catch (e) {
+        console.error("Post-update Mongo sync error:", e);
+      }
       res.json(updated);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -68,6 +81,11 @@ export async function registerRoutes(
       }
       res.status(500).json({ message: "Internal server error" });
     }
+  });
+
+  app.post("/api/admin/upload", (req, res) => {
+    // In a real scenario, we'd use multer. For now, we'll return a placeholder.
+    res.json({ url: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=800&auto=format&fit=crop" });
   });
 
   app.delete(api.admin.products.delete.path, async (req, res) => {
