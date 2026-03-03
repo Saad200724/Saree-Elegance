@@ -15,6 +15,7 @@ import OrderSuccess from "@/pages/OrderSuccess";
 import Sarees from "@/pages/category/Sarees";
 import Lehengas from "@/pages/category/Lehengas";
 import PakistaniDresses from "@/pages/category/PakistaniDresses";
+import Login from "@/pages/Login";
 import Auth from "@/pages/Auth";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
@@ -26,6 +27,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/auth" component={Auth} />
       <Route path="/shop" component={Shop} />
       <Route path="/sarees" component={Sarees} />

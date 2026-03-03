@@ -2,9 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { connectToMongoDB } from "./lib/mongodb";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Connect to MongoDB
+connectToMongoDB().catch(console.dir);
 
 declare module "http" {
   interface IncomingMessage {

@@ -117,7 +117,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <Button asChild variant="default" size="sm" className="hidden md:flex bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20">
-                  <Link href="/auth">Login</Link>
+                  <Link href="/login">Login</Link>
                 </Button>
               )}
 
@@ -144,7 +144,7 @@ export default function Navbar() {
                     </div>
                     {!user && (
                       <Button asChild className="w-full bg-primary hover:bg-primary/90 text-white">
-                        <Link href="/auth">Login / Register</Link>
+                        <Link href="/login">Login / Register</Link>
                       </Button>
                     )}
                   </div>
@@ -172,7 +172,7 @@ export default function Navbar() {
              </div>
           </Link>
         </div>
-        <Link href="/auth" className={`flex flex-col items-center gap-1 ${location === "/auth" ? "text-accent" : "text-gray-500"}`}>
+        <Link href="/login" className={`flex flex-col items-center gap-1 ${location === "/login" ? "text-accent" : "text-gray-500"}`}>
           <User className="h-5 w-5" />
           <span className="text-[10px] font-medium">Profile</span>
         </Link>
