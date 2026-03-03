@@ -41,16 +41,63 @@ export class DatabaseStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const [newProduct] = await db.insert(products).values(product).returning();
+    // Sync to Mongo
+    try {
+      await MongoProduct.create({
+        name: newProduct.name,
+        description: newProduct.description,
+        price: newProduct.price.toString(),
+        originalPrice: newProduct.originalPrice?.toString(),
+        imageUrl: newProduct.imageUrl,
+        category: newProduct.category,
+        stock: newProduct.stock,
+        isNewArrival: newProduct.isNewArrival
+      });
+      console.log(`Synced product ${newProduct.name} to MongoDB`);
+    } catch (e) {
+      console.error("Mongo Sync Error on Create:", e);
+    }
     return newProduct;
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
     const [updated] = await db.update(products).set(product).where(eq(products.id, id)).returning();
+    if (updated) {
+      // Sync to Mongo
+      try {
+        await MongoProduct.findOneAndUpdate(
+          { name: updated.name },
+          {
+            name: updated.name,
+            description: updated.description,
+            price: updated.price.toString(),
+            originalPrice: updated.originalPrice?.toString(),
+            imageUrl: updated.imageUrl,
+            category: updated.category,
+            stock: updated.stock,
+            isNewArrival: updated.isNewArrival
+          },
+          { upsert: true }
+        );
+        console.log(`Synced product ${updated.name} to MongoDB on update`);
+      } catch (e) {
+        console.error("Mongo Sync Error on Update:", e);
+      }
+    }
     return updated;
   }
 
   async deleteProduct(id: number): Promise<void> {
+    const product = await this.getProduct(id);
     await db.delete(products).where(eq(products.id, id));
+    if (product) {
+      try {
+        await MongoProduct.deleteOne({ name: product.name });
+        console.log(`Deleted product ${product.name} from MongoDB`);
+      } catch (e) {
+        console.error("Mongo Sync Error on Delete:", e);
+      }
+    }
   }
 
   async getProduct(id: number): Promise<Product | undefined> {

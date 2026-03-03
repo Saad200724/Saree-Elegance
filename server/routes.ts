@@ -4,6 +4,10 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { MongoUser } from "./lib/mongodb";
+import { insertProductSchema } from "@shared/schema";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -43,6 +47,30 @@ export async function registerRoutes(
   });
 
   // === Admin Products ===
+  const storage_disk = multer.diskStorage({
+    destination: function (req: any, file: any, cb: any) {
+      const uploadPath = path.join(process.cwd(), "public", "images");
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: function (req: any, file: any, cb: any) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({ storage: storage_disk });
+
+  app.post("/api/admin/upload", upload.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const url = `/images/${req.file.filename}`;
+    res.json({ url });
+  });
+
   app.post("/api/admin/products", async (req, res) => {
     try {
       const input = insertProductSchema.parse(req.body);
@@ -83,9 +111,12 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/upload", (req, res) => {
-    // In a real scenario, we'd use multer. For now, we'll return a placeholder.
-    res.json({ url: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?q=80&w=800&auto=format&fit=crop" });
+  app.post("/api/admin/upload", upload.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const url = `/images/${req.file.filename}`;
+    res.json({ url });
   });
 
   app.delete(api.admin.products.delete.path, async (req, res) => {

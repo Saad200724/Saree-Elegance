@@ -126,11 +126,10 @@ export default function Admin() {
       });
       const data = await res.json();
       
-      const imageUrlInput = document.querySelector('input[name="imageUrl"]') as HTMLInputElement;
+      const imageUrlInput = document.getElementById('product-image-url') as HTMLInputElement;
       if (imageUrlInput) {
         imageUrlInput.value = data.url;
-        const event = new Event('input', { bubbles: true });
-        imageUrlInput.dispatchEvent(event);
+        // Also manually trigger form change if needed
       }
       toast({ title: "Image uploaded successfully" });
     } catch (err) {
@@ -248,22 +247,52 @@ export default function Admin() {
                     </div>
                     <div className="space-y-2 col-span-2">
                       <label className="text-sm font-medium">Product Image</label>
-                      <div className="flex gap-2">
-                        <Input name="imageUrl" defaultValue={editingProduct?.imageUrl} placeholder="Image URL" required />
-                        <div className="relative">
-                          <Input
+                      <div className="flex flex-col gap-2">
+                        <Input 
+                          name="imageUrl" 
+                          key={editingProduct?.imageUrl}
+                          defaultValue={editingProduct?.imageUrl} 
+                          placeholder="Image URL" 
+                          id="product-image-url"
+                          required 
+                        />
+                        <div 
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                          onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary'); }}
+                          onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary'); }}
+                          onDrop={async (e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.remove('border-primary');
+                            const file = e.dataTransfer.files?.[0];
+                            if (file) {
+                              const mockEvent = { target: { files: [file] } } as any;
+                              await handleFileUpload(mockEvent);
+                            }
+                          }}
+                          onClick={() => document.getElementById('file-upload-input')?.click()}
+                        >
+                          {uploading ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Uploading...</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1">
+                              <Upload className="h-6 w-6 text-gray-400" />
+                              <p className="text-sm text-gray-500">Drag & drop or click to upload</p>
+                            </div>
+                          )}
+                          <input
+                            id="file-upload-input"
                             type="file"
-                            className="absolute inset-0 opacity-0 cursor-pointer w-10"
+                            className="hidden"
                             onChange={handleFileUpload}
                             accept="image/*"
                             disabled={uploading}
                           />
-                          <Button type="button" variant="outline" size="icon" disabled={uploading}>
-                            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                          </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">Enter a URL or upload an image file</p>
+                      <p className="text-xs text-muted-foreground">Enter a URL above or drag/upload an image file</p>
                     </div>
                   </div>
                   <div className="space-y-2">
