@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db, pool, isDbConnected } from "./db";
 import {
   products, reviews, cartItems, orders, orderItems, users,
   type Product, type InsertProduct,
@@ -33,271 +33,380 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getProducts(category?: string, search?: string): Promise<Product[]> {
-    let query = db.select().from(products);
-    if (category) {
-      query = query.where(eq(products.category, category)) as any;
+    try {
+      await connectToMongoDB();
+      let query: any = {};
+      if (category) query.category = category;
+      if (search) query.name = { $regex: search, $options: 'i' };
+      
+      const mongoProducts = await MongoProduct.find(query).sort({ createdAt: -1 });
+      return mongoProducts.map(p => {
+        // Deterministic hash of _id to keep IDs stable during a session
+        let hash = 0;
+        const idStr = p._id.toString();
+        for (let i = 0; i < idStr.length; i++) {
+          hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+          hash |= 0;
+        }
+        return {
+          id: Math.abs(hash),
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          originalPrice: p.originalPrice || null,
+          imageUrl: p.imageUrl,
+          category: p.category,
+          stock: p.stock,
+          isNewArrival: p.isNewArrival,
+          createdAt: p.createdAt
+        };
+      });
+    } catch (e) {
+      console.error("Mongo Fetch Error:", e);
+      return [];
     }
-    return await query.orderBy(desc(products.createdAt));
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db.insert(products).values(product).returning();
-    // Sync to Mongo
     try {
       await connectToMongoDB();
-      await MongoProduct.create({
-        name: newProduct.name,
-        description: newProduct.description,
-        price: newProduct.price.toString(),
-        originalPrice: newProduct.originalPrice?.toString(),
-        imageUrl: newProduct.imageUrl,
-        category: newProduct.category,
-        stock: newProduct.stock,
-        isNewArrival: newProduct.isNewArrival
+      const newMongoProduct = await MongoProduct.create({
+        name: product.name,
+        description: product.description,
+        price: product.price.toString(),
+        originalPrice: product.originalPrice?.toString(),
+        imageUrl: product.imageUrl,
+        category: product.category,
+        stock: product.stock,
+        isNewArrival: product.isNewArrival
       });
-      console.log(`Synced product ${newProduct.name} to MongoDB`);
+      
+      let hash = 0;
+      const idStr = newMongoProduct._id.toString();
+      for (let i = 0; i < idStr.length; i++) {
+        hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+        hash |= 0;
+      }
+
+      return {
+        id: Math.abs(hash),
+        name: newMongoProduct.name,
+        description: newMongoProduct.description,
+        price: newMongoProduct.price,
+        originalPrice: newMongoProduct.originalPrice || null,
+        imageUrl: newMongoProduct.imageUrl,
+        category: newMongoProduct.category,
+        stock: newMongoProduct.stock,
+        isNewArrival: newMongoProduct.isNewArrival,
+        createdAt: newMongoProduct.createdAt
+      };
     } catch (e) {
-      console.error("Mongo Sync Error on Create:", e);
+      console.error("Mongo Create Error:", e);
+      throw e;
     }
-    return newProduct;
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined> {
-    const [updated] = await db.update(products).set(product).where(eq(products.id, id)).returning();
-    if (updated) {
-      // Sync to Mongo
-      try {
-        await connectToMongoDB();
-        await MongoProduct.findOneAndUpdate(
-          { name: updated.name },
-          {
-            name: updated.name,
-            description: updated.description,
-            price: updated.price.toString(),
-            originalPrice: updated.originalPrice?.toString(),
-            imageUrl: updated.imageUrl,
-            category: updated.category,
-            stock: updated.stock,
-            isNewArrival: updated.isNewArrival
-          },
-          { upsert: true, returnDocument: 'after' }
-        );
-        console.log(`Synced product ${updated.name} to MongoDB on update`);
-      } catch (e) {
-        console.error("Mongo Sync Error on Update:", e);
-      }
+    try {
+      await connectToMongoDB();
+      const existing = await this.getProduct(id);
+      if (!existing) return undefined;
+
+      const updated = await MongoProduct.findOneAndUpdate(
+        { name: existing.name },
+        {
+          $set: {
+            name: product.name || existing.name,
+            description: product.description || existing.description,
+            price: product.price?.toString() || existing.price,
+            originalPrice: product.originalPrice?.toString() || existing.originalPrice,
+            imageUrl: product.imageUrl || existing.imageUrl,
+            category: product.category || existing.category,
+            stock: product.stock !== undefined ? product.stock : existing.stock,
+            isNewArrival: product.isNewArrival !== undefined ? product.isNewArrival : existing.isNewArrival
+          }
+        },
+        { new: true }
+      );
+
+      if (!updated) return undefined;
+      return {
+        ...existing,
+        ...product,
+        price: updated.price,
+        originalPrice: updated.originalPrice || null,
+        imageUrl: updated.imageUrl,
+        category: updated.category,
+        stock: updated.stock,
+        isNewArrival: updated.isNewArrival
+      } as Product;
+    } catch (e) {
+      console.error("Mongo Update Error:", e);
+      return undefined;
     }
-    return updated;
   }
 
   async deleteProduct(id: number): Promise<void> {
-    const product = await this.getProduct(id);
-    await db.delete(products).where(eq(products.id, id));
-    if (product) {
-      try {
-        await connectToMongoDB();
+    try {
+      await connectToMongoDB();
+      const product = await this.getProduct(id);
+      if (product) {
         await MongoProduct.deleteOne({ name: product.name });
-        console.log(`Deleted product ${product.name} from MongoDB`);
-      } catch (e) {
-        console.error("Mongo Sync Error on Delete:", e);
       }
+    } catch (e) {
+      console.error("Mongo Delete Error:", e);
     }
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
-    return product;
+    try {
+      await connectToMongoDB();
+      const products = await this.getProducts();
+      const product = products.find(p => p.id === id);
+      if (product) return product;
+      
+      // Fallback: try to find by some other means if ID doesn't match
+      // (e.g. if the ID was generated differently in a previous call)
+      return undefined;
+    } catch (e) {
+      console.error("Mongo GetProduct Error:", e);
+      return undefined;
+    }
   }
 
   async getReviews(productId: number): Promise<Review[]> {
-    return await db.select().from(reviews).where(eq(reviews.productId, productId)).orderBy(desc(reviews.createdAt));
+    try {
+      await connectToMongoDB();
+      const mongoReviews = await MongoReview.find({ productId }).sort({ createdAt: -1 });
+      return mongoReviews.map(r => ({
+        id: Math.floor(Math.random() * 1000000),
+        productId: r.productId,
+        userId: r.userId || null,
+        reviewerName: r.reviewerName,
+        rating: r.rating,
+        comment: r.comment,
+        imageUrl: r.imageUrl || null,
+        createdAt: r.createdAt
+      }));
+    } catch (e) {
+      console.error("Mongo Review Fetch Error:", e);
+      return [];
+    }
   }
 
   async createReview(review: InsertReview): Promise<Review> {
-    const [newReview] = await db.insert(reviews).values(review).returning();
-    // Sync to Mongo
     try {
-      await MongoReview.create({
-        ...newReview,
-        price: undefined // Review doesn't have price
+      await connectToMongoDB();
+      const newMongoReview = await MongoReview.create({
+        productId: review.productId,
+        userId: review.userId,
+        reviewerName: review.reviewerName,
+        rating: review.rating,
+        comment: review.comment,
+        imageUrl: review.imageUrl
       });
+      return {
+        id: Math.floor(Math.random() * 1000000),
+        productId: newMongoReview.productId,
+        userId: newMongoReview.userId || null,
+        reviewerName: newMongoReview.reviewerName,
+        rating: newMongoReview.rating,
+        comment: newMongoReview.comment,
+        imageUrl: newMongoReview.imageUrl || null,
+        createdAt: newMongoReview.createdAt
+      };
     } catch (e) {
-      console.error("Mongo Sync Error:", e);
+      console.error("Mongo Review Create Error:", e);
+      throw e;
     }
-    return newReview;
   }
 
   async getCartItems(userId?: string, sessionId?: string): Promise<(CartItem & { product: Product })[]> {
-    const results = await db.select({
-      id: cartItems.id,
-      userId: cartItems.userId,
-      sessionId: cartItems.sessionId,
-      productId: cartItems.productId,
-      quantity: cartItems.quantity,
-      createdAt: cartItems.createdAt,
-      product: products,
-    })
-    .from(cartItems)
-    .innerJoin(products, eq(cartItems.productId, products.id))
-    .where(
-      userId 
-        ? eq(cartItems.userId, userId)
-        : eq(cartItems.sessionId, sessionId!)
-    );
-    return results;
+    try {
+      if (!isDbConnected) return [];
+      const dbCartItems = await db.select().from(cartItems).where(
+        userId 
+          ? eq(cartItems.userId, userId)
+          : eq(cartItems.sessionId, sessionId!)
+      );
+      
+      const mongoProducts = await this.getProducts();
+      
+      return dbCartItems.map(item => {
+        const product = mongoProducts.find(p => p.id === item.productId);
+        return {
+          ...item,
+          product: product || {
+            id: item.productId,
+            name: "Unknown Product",
+            description: "",
+            price: "0",
+            originalPrice: null,
+            imageUrl: "",
+            category: "",
+            stock: 0,
+            isNewArrival: false,
+            createdAt: new Date()
+          }
+        };
+      });
+    } catch (e) {
+      console.error("Cart Fetch Error:", e);
+      return [];
+    }
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
-    const [existing] = await db.select()
-      .from(cartItems)
-      .where(
-        and(
-          eq(cartItems.productId, item.productId),
-          item.userId 
-            ? eq(cartItems.userId, item.userId) 
-            : eq(cartItems.sessionId, item.sessionId!)
-        )
-      );
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      const [existing] = await db.select()
+        .from(cartItems)
+        .where(
+          and(
+            eq(cartItems.productId, item.productId),
+            item.userId 
+              ? eq(cartItems.userId, item.userId) 
+              : eq(cartItems.sessionId, item.sessionId!)
+          )
+        );
 
-    if (existing) {
-      const [updated] = await db.update(cartItems)
-        .set({ quantity: existing.quantity + (item.quantity || 1) })
-        .where(eq(cartItems.id, existing.id))
-        .returning();
-      return updated;
+      if (existing) {
+        const [updated] = await db.update(cartItems)
+          .set({ quantity: existing.quantity + (item.quantity || 1) })
+          .where(eq(cartItems.id, existing.id))
+          .returning();
+        return updated;
+      }
+      const [newItem] = await db.insert(cartItems).values(item).returning();
+      return newItem;
+    } catch (e) {
+      console.error("Add to cart error:", e);
+      return { ...item, id: Math.floor(Math.random() * 1000000), userId: item.userId || null, sessionId: item.sessionId || null, createdAt: new Date() } as CartItem;
     }
-    const [newItem] = await db.insert(cartItems).values(item).returning();
-    return newItem;
   }
 
   async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
-    const [updated] = await db.update(cartItems)
-      .set({ quantity })
-      .where(eq(cartItems.id, id))
-      .returning();
-    return updated;
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      const [updated] = await db.update(cartItems)
+        .set({ quantity })
+        .where(eq(cartItems.id, id))
+        .returning();
+      return updated;
+    } catch (e) {
+      console.error("Update cart item error:", e);
+      return undefined;
+    }
   }
 
   async removeFromCart(id: number): Promise<void> {
-    await db.delete(cartItems).where(eq(cartItems.id, id));
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      await db.delete(cartItems).where(eq(cartItems.id, id));
+    } catch (e) {
+      console.error("Remove from cart error:", e);
+    }
   }
 
   async clearCart(userId?: string, sessionId?: string): Promise<void> {
-    const whereClause = userId 
-      ? eq(cartItems.userId, userId)
-      : sessionId 
-        ? eq(cartItems.sessionId, sessionId)
-        : null;
-    if (whereClause) {
-      await db.delete(cartItems).where(whereClause);
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      const whereClause = userId 
+        ? eq(cartItems.userId, userId)
+        : sessionId 
+          ? eq(cartItems.sessionId, sessionId)
+          : null;
+      if (whereClause) {
+        await db.delete(cartItems).where(whereClause);
+      }
+    } catch (e) {
+      console.error("Clear cart error:", e);
     }
   }
 
   async createOrder(orderData: InsertOrder, items: { productId: number, quantity: number, price: number }[]): Promise<Order> {
-    return await db.transaction(async (tx) => {
-      const [order] = await tx.insert(orders).values(orderData).returning();
-      for (const item of items) {
-        await tx.insert(orderItems).values({
-          orderId: order.id,
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price.toString(),
-        });
-      }
-      return order;
-    });
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      return await db.transaction(async (tx: any) => {
+        const [order] = await tx.insert(orders).values(orderData).returning();
+        for (const item of items) {
+          await tx.insert(orderItems).values({
+            orderId: order.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price.toString(),
+          });
+        }
+        return order;
+      });
+    } catch (e) {
+      console.error("Create order error:", e);
+      throw e;
+    }
   }
 
   async getOrders(): Promise<(Order & { items: any[] })[]> {
-    const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
-    const results = [];
-    for (const order of allOrders) {
-      const items = await db.select({
-        id: orderItems.id,
-        orderId: orderItems.orderId,
-        productId: orderItems.productId,
-        quantity: orderItems.quantity,
-        price: orderItems.price,
-        product: products,
-      })
-      .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .where(eq(orderItems.orderId, order.id));
-      results.push({ ...order, items });
+    try {
+      if (!isDbConnected) return [];
+      await connectToMongoDB();
+      const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
+      const mongoProducts = await this.getProducts();
+      const results = [];
+      
+      for (const order of allOrders) {
+        const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+        const itemsWithProduct = items.map(item => ({
+          ...item,
+          product: mongoProducts.find(p => p.id === item.productId)
+        }));
+        results.push({ ...order, items: itemsWithProduct });
+      }
+      return results;
+    } catch (e) {
+      console.error("Order Fetch Error:", e);
+      return [];
     }
-    return results;
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
-    const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
-    return updated;
+    try {
+      if (!isDbConnected) throw new Error("Database not connected");
+      const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+      return updated;
+    } catch (e) {
+      console.error("Update order status error:", e);
+      return undefined;
+    }
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).onConflictDoUpdate({
-      target: users.email,
-      set: userData
-    }).returning();
-    // Sync to Mongo
     try {
-      await MongoUser.findOneAndUpdate(
-        { email: user.email },
+      await connectToMongoDB();
+      const updatedMongoUser = await MongoUser.findOneAndUpdate(
+        { email: userData.email },
         {
-          email: user.email,
-          name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-          password: "OAuthUser", // For Replit Auth, we don't have password, but we need it for schema
+          email: userData.email,
+          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          password: "OAuthUser",
         },
-        { upsert: true, returnDocument: 'after' }
+        { upsert: true, new: true }
       );
+      
+      return {
+        id: Math.floor(Math.random() * 1000000),
+        email: updatedMongoUser.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      };
     } catch (e) {
-      console.error("Mongo User Sync Error:", e);
+      console.error("Mongo User Upsert Error:", e);
+      throw e;
     }
-    return user;
   }
 
   async syncWithMongo(): Promise<void> {
-    try {
-      await connectToMongoDB();
-      
-      // Wait for connection to be fully established if it's currently connecting
-      if (mongoose.connection.readyState === 2) {
-        await new Promise((resolve) => {
-          const check = () => {
-            if (mongoose.connection.readyState === 1) resolve(true);
-            else setTimeout(check, 100);
-          };
-          check();
-        });
-      }
-
-      if (mongoose.connection.readyState !== 1) {
-        console.error("MongoDB not ready for sync after waiting. State:", mongoose.connection.readyState);
-        return;
-      }
-      console.log("Starting MongoDB sync...");
-      const allProducts = await db.select().from(products);
-      console.log(`Found ${allProducts.length} products to sync`);
-      
-      for (const p of allProducts) {
-        await MongoProduct.findOneAndUpdate(
-          { name: p.name },
-          {
-            name: p.name,
-            description: p.description,
-            price: p.price.toString(),
-            originalPrice: p.originalPrice?.toString(),
-            imageUrl: p.imageUrl,
-            category: p.category,
-            stock: p.stock,
-            isNewArrival: p.isNewArrival
-          },
-          { upsert: true, returnDocument: 'after' }
-        );
-      }
-      console.log("Successfully synced products to MongoDB");
-    } catch (error) {
-      console.error("Error syncing with MongoDB:", error);
-    }
+    // This is no longer needed as we're using Mongo directly
+    return;
   }
 }
 

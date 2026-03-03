@@ -67,6 +67,7 @@ export async function registerRoutes(
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+    // Ensure the path is correct for the frontend
     const url = `/images/${req.file.filename}`;
     res.json({ url });
   });
@@ -75,17 +76,12 @@ export async function registerRoutes(
     try {
       const input = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(input);
-      // Sync to Mongo after creation
-      try {
-        await storage.syncWithMongo();
-      } catch (e) {
-        console.error("Post-create Mongo sync error:", e);
-      }
       res.status(201).json(product);
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
+      console.error("Product creation error:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -96,28 +92,17 @@ export async function registerRoutes(
       const input = insertProductSchema.partial().parse(req.body);
       const updated = await storage.updateProduct(id, input);
       if (!updated) return res.status(404).json({ message: "Product not found" });
-      // Sync to Mongo after update
-      try {
-        await storage.syncWithMongo();
-      } catch (e) {
-        console.error("Post-update Mongo sync error:", e);
-      }
       res.json(updated);
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
+      console.error("Product update error:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  app.post("/api/admin/upload", upload.single("file"), (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    const url = `/images/${req.file.filename}`;
-    res.json({ url });
-  });
+  // Duplicate upload route removed
 
   app.delete(api.admin.products.delete.path, async (req, res) => {
     const id = parseInt(req.params.id);
@@ -243,116 +228,10 @@ export async function registerRoutes(
   });
 
   // Seed Data
-  await seedDatabase();
+  // seedDatabase no longer needed as we use Mongo directly and don't want to re-seed on every restart
+  // await seedDatabase();
 
   return httpServer;
-}
-
-async function seedDatabase() {
-  const products = await storage.getProducts();
-  if (products.length === 0) {
-    // Insert dummy products using attached assets
-    const seedProducts = [
-      {
-        name: "Bridal Lehenga Pink Floral",
-        description: "Heavy Embroidery & Diamond Border Bridal Lehenga. Perfect for grand weddings.",
-        price: 45000.00,
-        imageUrl: "/images/IMG-20250524-WA0015-300x300_1770468292705.jpg",
-        category: "Lehenga",
-        isNewArrival: true,
-        stock: 5
-      },
-      {
-        name: "Burberry Jarkan Maroon Lehenga",
-        description: "Deep maroon velvet lehenga with Burberry Jarkan work.",
-        price: 32000.00,
-        imageUrl: "/images/IMG-20250524-WA0068-300x300_1770468292707.jpg",
-        category: "Lehenga",
-        isNewArrival: true,
-        stock: 8
-      },
-      {
-        name: "Georgette Dupatta Maroon Suite",
-        description: "Elegant maroon georgette dupatta with intricate embroidery.",
-        price: 2250.00,
-        imageUrl: "/images/IMG-20250524-WA0070-300x300_1770468292716.jpg",
-        category: "Saree",
-        stock: 10
-      },
-      {
-        name: "Georgette Jarkan Maroon Saree",
-        description: "Beautiful maroon saree with georgette jarkan work.",
-        price: 2295.00,
-        imageUrl: "/images/IMG-20250524-WA0072-300x300_1770468292718.jpg",
-        category: "Saree",
-        stock: 12
-      },
-      {
-        name: "Georgette Jarkan Designer Saree",
-        description: "Premium maroon georgette jarkan designer saree.",
-        price: 2495.00,
-        imageUrl: "/images/IMG-20250524-WA0075-300x300_1770468292725.jpg",
-        category: "Saree",
-        stock: 7
-      },
-      {
-        name: "Heavy Work Georgette Jarkan",
-        description: "Rich maroon georgette saree with heavy jarkan embroidery.",
-        price: 2800.00,
-        imageUrl: "/images/IMG-20250524-WA0076-300x300_1770468292729.jpg",
-        category: "Saree",
-        stock: 20
-      },
-      {
-        name: "Royal Maroon Jarkan Saree",
-        description: "Exquisite royal maroon saree with detailed jarkan work.",
-        price: 3500.00,
-        imageUrl: "/images/IMG-20250524-WA0077-300x300_1770468292734.jpg",
-        category: "Saree",
-        stock: 15
-      },
-      {
-        name: "Bridal White Lehenga",
-        description: "Stunning white bridal lehenga with heavy traditional work.",
-        price: 38000.00,
-        imageUrl: "/images/IMG-20250524-WA0111-300x300_1770468292737.jpg",
-        category: "Lehenga",
-        stock: 25
-      },
-      {
-        name: "Net Zarkan Arpita Blue Lehenga",
-        description: "Beautiful blue net lehenga with Zarkan Arpita work.",
-        price: 28500.00,
-        imageUrl: "/images/IMG-20250524-WA0116-300x300_1770468292740.jpg",
-        category: "Lehenga",
-        stock: 30
-      },
-      {
-        name: "Net Zarkan Aneri Purple Lehenga",
-        description: "Elegant purple net lehenga with Zarkan Aneri embroidery.",
-        price: 29000.00,
-        imageUrl: "/images/IMG-20250524-WA0123-300x300_1770468292743.jpg",
-        category: "Lehenga",
-        stock: 18
-      },
-      {
-        name: "Sequence Zarkan Shivangi Pink",
-        description: "Soft pink lehenga with sequence and Zarkan Shivangi work.",
-        price: 31000.00,
-        imageUrl: "/images/IMG-20250524-WA0168-300x300_1770468292753.jpg",
-        category: "Lehenga",
-        stock: 15
-      }
-    ];
-
-    for (const p of seedProducts) {
-      await db.insert(schema.products).values({
-        ...p,
-        price: p.price.toString(),
-      });
-    }
-    console.log("Database seeded with products");
-  }
 }
 
 import * as schema from "@shared/schema";

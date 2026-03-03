@@ -19,6 +19,7 @@ export const connectToMongoDB = async () => {
       serverSelectionTimeoutMS: 45000, 
       connectTimeoutMS: 45000,
       socketTimeoutMS: 60000,
+      dbName: 'test', // Explicitly set database name if needed, or let URI handle it
     });
     console.log("Successfully connected to MongoDB Atlas via Mongoose");
   } catch (error) {

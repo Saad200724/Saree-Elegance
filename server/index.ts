@@ -3,9 +3,14 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { connectToMongoDB } from "./lib/mongodb";
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Serve static images from public folder
+// Use absolute path to ensure it's found regardless of process.cwd()
+app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')));
 
 // Connect to MongoDB
 connectToMongoDB().catch(console.dir);
