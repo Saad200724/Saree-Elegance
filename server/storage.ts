@@ -80,7 +80,7 @@ export class DatabaseStorage implements IStorage {
             stock: updated.stock,
             isNewArrival: updated.isNewArrival
           },
-          { upsert: true }
+          { upsert: true, returnDocument: 'after' }
         );
         console.log(`Synced product ${updated.name} to MongoDB on update`);
       } catch (e) {
@@ -247,7 +247,7 @@ export class DatabaseStorage implements IStorage {
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
           password: "OAuthUser", // For Replit Auth, we don't have password, but we need it for schema
         },
-        { upsert: true }
+        { upsert: true, returnDocument: 'after' }
       );
     } catch (e) {
       console.error("Mongo User Sync Error:", e);
@@ -291,7 +291,7 @@ export class DatabaseStorage implements IStorage {
             stock: p.stock,
             isNewArrival: p.isNewArrival
           },
-          { upsert: true, new: true }
+          { upsert: true, returnDocument: 'after' }
         );
       }
       console.log("Successfully synced products to MongoDB");

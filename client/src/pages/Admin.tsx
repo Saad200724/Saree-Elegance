@@ -229,7 +229,6 @@ export default function Admin() {
                           <SelectItem value="Saree">Saree</SelectItem>
                           <SelectItem value="Lehenga">Lehenga</SelectItem>
                           <SelectItem value="Pakistani">Pakistani</SelectItem>
-                          <SelectItem value="Three Piece">Three Piece</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

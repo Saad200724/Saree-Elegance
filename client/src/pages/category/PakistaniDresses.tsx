@@ -8,7 +8,7 @@ import alponaDesignHome from "@/assets/images/Alpona_Design.png";
 
 export default function PakistaniDresses() {
   const { data: products, isLoading } = useProducts({
-    category: "Pakistani Dress",
+    category: "Pakistani",
   });
 
   return (
