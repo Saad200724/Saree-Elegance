@@ -139,21 +139,24 @@ export class DatabaseStorage extends (authStorage.constructor as { new(): IAuthS
 
   async syncWithMongo(): Promise<void> {
     try {
+      console.log("Starting MongoDB sync...");
       const allProducts = await db.select().from(products);
+      console.log(`Found ${allProducts.length} products to sync`);
+      
       for (const p of allProducts) {
         await MongoProduct.findOneAndUpdate(
           { name: p.name },
           {
             name: p.name,
             description: p.description,
-            price: p.price,
-            originalPrice: p.originalPrice,
+            price: p.price.toString(),
+            originalPrice: p.originalPrice?.toString(),
             imageUrl: p.imageUrl,
             category: p.category,
             stock: p.stock,
             isNewArrival: p.isNewArrival
           },
-          { upsert: true }
+          { upsert: true, new: true }
         );
       }
       console.log("Successfully synced products to MongoDB");

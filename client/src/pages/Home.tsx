@@ -36,7 +36,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[25vh] md:h-[75vh] w-full overflow-hidden md:rounded-none rounded-b-[3rem] bg-[#4a3728]">
+      <section className="relative h-[25vh] md:h-[75vh] w-full overflow-hidden md:rounded-none rounded-b-[1.3rem] bg-[#4a3728]">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-fixed"
           style={{ backgroundImage: `url(/hero-bg.jpg)` }}

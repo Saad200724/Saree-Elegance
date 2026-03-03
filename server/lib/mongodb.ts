@@ -1,17 +1,19 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const uri = process.env.MONGODB_URI || "mongodb+srv://saadbintofayel:Saad1234@chandrabati.byubzpi.mongodb.net/?appName=Chandrabati";
 
 export const connectToMongoDB = async () => {
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+    });
     console.log("Successfully connected to MongoDB via Mongoose");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   }
 };
 
-// Define Mongoose Product Schema matching Drizzle
 const ProductSchema: Schema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -26,7 +28,6 @@ const ProductSchema: Schema = new Schema({
 
 export const MongoProduct = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 
-// Define Review Schema
 const ReviewSchema: Schema = new Schema({
   productId: { type: Number, required: true },
   userId: { type: String },
