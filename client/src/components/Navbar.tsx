@@ -165,7 +165,7 @@ export default function Navbar() {
           <Grid className="h-5 w-5" />
           <span className="text-[10px] font-medium">Categories</span>
         </Link>
-        <div className="relative mt-2">
+        <div className="relative mt">
           <Link href="/" className="bg-white rounded-full p-1 shadow-md border border-gray-50">
              <div className="p-1 rounded-full">
                <img src="/logo.png" alt="Home" className="h-14 w-14 object-contain" />
