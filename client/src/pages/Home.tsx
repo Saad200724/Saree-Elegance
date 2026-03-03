@@ -36,37 +36,14 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-[60vh] w-full overflow-hidden bg-[#4a3728]">
+      <section className="relative h-[60vh] w-full overflow-hidden rounded-b-3xl bg-[#4a3728]">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-60"
-          style={{ backgroundImage: `url(/logo.png)`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(/hero-bg.jpg)` }}
         ></div>
         
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center">
-          <motion.img 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            src="/logo.png" 
-            alt="চন্দ্রাবতী" 
-            className="h-48 w-48 mb-6 drop-shadow-2xl" 
-          />
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-bold text-white mb-4 drop-shadow-lg"
-          >
-            চন্দ্রাবতী
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl md:text-2xl text-white/90 max-w-2xl font-light tracking-widest uppercase"
-          >
-            Sarees That Define You
-          </motion.p>
+          {/* Content overlay if needed, but keeping image clear as requested */}
         </div>
       </section>
 

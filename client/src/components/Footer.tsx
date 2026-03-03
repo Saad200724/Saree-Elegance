@@ -19,14 +19,8 @@ export default function Footer() {
               Sarees That Define You. Experience the elegance of traditional handloom and contemporary designs.
             </p>
             <div className="flex gap-4 pt-2">
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors">
                 <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -46,27 +40,22 @@ export default function Footer() {
           <div>
             <h3 className="font-heading font-semibold text-gray-900 mb-6">Company</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-500 hover:text-accent text-sm transition-colors">About Us</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-accent text-sm transition-colors">Contact</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-accent text-sm transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-gray-500 hover:text-accent text-sm transition-colors">Privacy Policy</a></li>
+              <li><Link href="/about-us" className="text-gray-500 hover:text-accent text-sm transition-colors">About Us</Link></li>
+              <li><Link href="/contact" className="text-gray-500 hover:text-accent text-sm transition-colors">Contact</Link></li>
+              <li><Link href="/terms" className="text-gray-500 hover:text-accent text-sm transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="text-gray-500 hover:text-accent text-sm transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Social & Contact */}
           <div>
-            <h3 className="font-heading font-semibold text-gray-900 mb-6">Newsletter</h3>
-            <p className="text-gray-500 text-sm mb-4">Subscribe to get special offers and updates.</p>
-            <form className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="flex-1 px-4 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:border-accent transition-colors"
-              />
-              <button className="bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-primary/90 transition-colors">
-                Join
-              </button>
-            </form>
+            <h3 className="font-heading font-semibold text-gray-900 mb-6">Connect</h3>
+            <p className="text-gray-500 text-sm mb-4">Phone: 01805-108818</p>
+            <div className="flex gap-4">
+              <a href="https://www.facebook.com/profile.php?id=61584594611053" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-accent transition-colors">
+                <Facebook className="h-6 w-6" />
+              </a>
+            </div>
           </div>
         </div>
 

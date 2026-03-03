@@ -19,7 +19,7 @@ export default function Lehengas() {
     >
       <Navbar />
 
-      <section className="relative h-[40vh] w-full overflow-hidden bg-gray-900">
+      <section className="relative h-[40vh] w-full overflow-hidden rounded-b-3xl bg-gray-900">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${bannerImg})` }}

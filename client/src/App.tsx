@@ -16,6 +16,11 @@ import Sarees from "@/pages/category/Sarees";
 import Lehengas from "@/pages/category/Lehengas";
 import PakistaniDresses from "@/pages/category/PakistaniDresses";
 import Auth from "@/pages/Auth";
+import AboutUs from "@/pages/AboutUs";
+import Contact from "@/pages/Contact";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import MessengerFloating from "@/components/MessengerFloating";
 
 function Router() {
   return (
@@ -30,6 +35,10 @@ function Router() {
       <Route path="/cart" component={Cart} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/success" component={OrderSuccess} />
+      <Route path="/about-us" component={AboutUs} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -41,6 +50,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <MessengerFloating />
       </TooltipProvider>
     </QueryClientProvider>
   );
