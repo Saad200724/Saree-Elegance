@@ -1,21 +1,26 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const uri = "mongodb+srv://saadbintofayel:Saad1234@chandrabati.byubzpi.mongodb.net/?appName=Chandrabati";
+const uri = process.env.MONGODB_URI;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-export const client = new MongoClient(uri, {
+if (!uri) {
+  console.warn("MONGODB_URI environment variable is not set. MongoDB connection will be skipped.");
+}
+
+export const client = uri ? new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
   }
-});
+}) : null;
 
 export async function connectToMongoDB() {
+  if (!client) {
+    console.log("MongoDB client not configured (MONGODB_URI not set). Skipping connection.");
+    return null;
+  }
   try {
-    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
     return client;
@@ -24,6 +29,3 @@ export async function connectToMongoDB() {
     throw error;
   }
 }
-
-// Note: In a real production app, you might want to handle disconnection or use a singleton pattern.
-// For this setup, we're providing the connection logic as requested.
