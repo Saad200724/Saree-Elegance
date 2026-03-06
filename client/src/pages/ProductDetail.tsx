@@ -46,11 +46,11 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
           {/* Image Section */}
           <div className="space-y-6">
-            <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 group relative">
+            <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 group relative flex items-center justify-center">
               <img 
                 src={product.imageUrl} 
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-110"
               />
               {product.isNewArrival && (
                 <div className="absolute top-8 left-8 bg-black text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl">

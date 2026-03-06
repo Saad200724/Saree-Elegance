@@ -47,29 +47,23 @@ export async function registerRoutes(
   });
 
   // === Admin Products ===
-  const storage_disk = multer.diskStorage({
-    destination: function (req: any, file: any, cb: any) {
-      const uploadPath = path.join(process.cwd(), "public", "images");
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-      cb(null, uploadPath);
-    },
-    filename: function (req: any, file: any, cb: any) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
   });
-
-  const upload = multer({ storage: storage_disk });
 
   app.post("/api/admin/upload", upload.single("file"), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    // Ensure the path is correct for the frontend
-    const url = `/images/${req.file.filename}`;
-    res.json({ url });
+    
+    try {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      res.json({ url: base64Image });
+    } catch (err) {
+      console.error("Image processing error:", err);
+      res.status(500).json({ message: "Failed to process image" });
+    }
   });
 
   app.post("/api/admin/products", async (req, res) => {
