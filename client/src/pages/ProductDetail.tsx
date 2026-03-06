@@ -42,125 +42,130 @@ export default function ProductDetail() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
-      <main className="flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-          
-          {/* Image Section - Edge to Edge on Mobile, Half Screen on Desktop */}
-          <div className="relative h-[70vh] lg:h-[calc(100vh-80px)] sticky top-20">
-            <img 
-              src={product.imageUrl} 
-              alt={product.name}
-              className="w-full h-full object-cover object-center"
-            />
-            {product.isNewArrival && (
-              <div className="absolute top-10 left-10">
-                <span className="bg-black text-white text-[10px] font-bold uppercase tracking-[0.4em] px-6 py-2">
-                  Limited Edition
-                </span>
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Image Section */}
+          <div className="space-y-4">
+            <div className="aspect-square rounded-lg overflow-hidden border border-gray-100">
+              <img 
+                src={product.imageUrl} 
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Thumbnail Placeholder */}
+            <div className="flex gap-2">
+              <div className="w-20 h-20 rounded border-2 border-primary overflow-hidden">
+                <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Info Section - Scrollable on Desktop */}
-          <div className="px-6 py-12 lg:p-24 flex flex-col justify-center max-w-2xl mx-auto lg:mx-0">
-            <div className="space-y-12">
-              <header className="space-y-4">
-                <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">
-                  <span>{product.category}</span>
-                  <div className="w-8 h-px bg-gray-200" />
-                  <span className={product.stock > 0 ? "text-emerald-600" : "text-red-500"}>
-                    {product.stock > 0 ? "In Stock" : "Sold Out"}
-                  </span>
-                </div>
-                <h1 className="font-heading text-4xl lg:text-6xl font-bold text-gray-900 tracking-tighter leading-none uppercase">
-                  {product.name}
-                </h1>
-                <div className="flex items-center gap-6 pt-4">
-                  <span className="text-3xl font-light tracking-tighter text-gray-900">
-                    ৳{Number(product.price).toLocaleString()}
-                  </span>
-                  {product.originalPrice && (
-                    <span className="text-xl text-gray-300 line-through font-extralight tracking-tighter">
-                      ৳{Number(product.originalPrice).toLocaleString()}
-                    </span>
-                  )}
-                </div>
-              </header>
+          {/* Info Section */}
+          <div className="flex flex-col">
+            <nav className="text-xs text-gray-400 mb-4 flex gap-2">
+              <span>Home</span> / <span>{product.category}</span> / <span className="text-gray-600">{product.name}</span>
+            </nav>
 
-              <div className="space-y-6">
-                <p className="text-gray-500 text-lg font-light leading-relaxed">
-                  {product.description}
-                </p>
-                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-gray-100">
-                  <div>
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-black mb-2">Material</h4>
-                    <p className="text-xs text-gray-500 font-light">Hand-selected premium silk blend with heritage embroidery.</p>
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-black mb-2">Care</h4>
-                    <p className="text-xs text-gray-500 font-light">Dry clean only. Preserve the artisan craftsmanship.</p>
-                  </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
+            
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <span className="text-xs text-gray-400">(0 reviews)</span>
+            </div>
+
+            <div className="text-2xl font-bold text-[#0D3B31] mb-4">
+              ৳{Number(product.price).toLocaleString()}
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <div className="text-sm text-emerald-600 font-medium">In Stock</div>
+              <div className="text-sm text-gray-600">Stock: {product.stock}</div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">Quantity:</span>
+                <div className="flex items-center border rounded">
+                  <button onClick={decrement} className="p-2 hover:bg-gray-50"><Minus className="w-3 h-3" /></button>
+                  <span className="w-10 text-center text-sm">{quantity}</span>
+                  <button onClick={increment} className="p-2 hover:bg-gray-50"><Plus className="w-3 h-3" /></button>
                 </div>
               </div>
 
-              {/* Purchase Actions */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border border-gray-200 h-16 px-4">
-                    <button onClick={decrement} className="p-2 hover:text-primary transition-colors"><Minus className="w-3 h-3" /></button>
-                    <span className="w-12 text-center font-bold text-sm">{quantity}</span>
-                    <button onClick={increment} className="p-2 hover:text-primary transition-colors"><Plus className="w-3 h-3" /></button>
-                  </div>
-                  <Button 
-                    onClick={handleAddToCart} 
-                    disabled={addToCart.isPending || product.stock === 0}
-                    className="flex-1 bg-black hover:bg-gray-900 text-white h-16 rounded-none text-xs font-bold uppercase tracking-[0.3em] transition-all"
-                  >
-                    {addToCart.isPending ? "Adding..." : "Add to Shopping Bag"}
-                  </Button>
-                </div>
-                <button className="w-full h-16 border border-black text-black text-xs font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-all">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  onClick={handleAddToCart} 
+                  disabled={addToCart.isPending || product.stock === 0}
+                  className="flex-1 bg-[#22C55E] hover:bg-[#16A34A] text-white rounded-md h-12 font-bold flex items-center justify-center gap-2"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  Add to Cart
+                </Button>
+              </div>
+
+              <div className="flex gap-4">
+                <button className="flex-1 py-2 px-4 border border-gray-200 rounded text-xs font-medium flex items-center justify-center gap-2 hover:bg-gray-50">
                   <Heart className="w-4 h-4" /> Add to Wishlist
                 </button>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 py-12 border-y border-gray-100">
-                <div className="text-center space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em]">Free Shipping</div>
-                  <div className="text-[9px] text-gray-400">On all orders</div>
-                </div>
-                <div className="text-center space-y-2 border-x border-gray-100">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em]">7-Day Returns</div>
-                  <div className="text-[9px] text-gray-400">Hassle free</div>
-                </div>
-                <div className="text-center space-y-2">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em]">Secure Payment</div>
-                  <div className="text-[9px] text-gray-400">100% Protected</div>
-                </div>
+                <button className="flex-1 py-2 px-4 border border-gray-200 rounded text-xs font-medium flex items-center justify-center gap-2 hover:bg-gray-50">
+                  <Share2 className="w-4 h-4" /> Share
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Curated Selection Section */}
-        {recommendedProducts.length > 0 && (
-          <section className="py-24 px-6 lg:px-12 bg-[#fafafa]">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex justify-between items-end mb-16">
-                <div>
-                  <h2 className="text-[10px] font-bold uppercase tracking-[0.5em] text-primary mb-4">The Collection</h2>
-                  <h3 className="text-3xl lg:text-4xl font-heading font-bold uppercase tracking-tighter">You May Also Like</h3>
+        {/* Tabs Section */}
+        <div className="border-t border-gray-100">
+          <div className="flex border-b border-gray-100">
+            <button 
+              onClick={() => setActiveTab('desc')}
+              className={`px-8 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'desc' ? 'border-primary text-primary bg-gray-50' : 'border-transparent text-gray-400'}`}
+            >
+              Description
+            </button>
+            <button 
+              onClick={() => setActiveTab('reviews')}
+              className={`px-8 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'reviews' ? 'border-primary text-primary bg-gray-50' : 'border-transparent text-gray-400'}`}
+            >
+              Reviews
+            </button>
+          </div>
+
+          <div className="py-8">
+            {activeTab === 'desc' ? (
+              <div className="space-y-6">
+                <h3 className="font-bold text-lg">Product Description</h3>
+                <div className="text-gray-600 text-sm leading-relaxed space-y-4">
+                  <p className="font-bold uppercase text-xs">Benefits</p>
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>{product.description}</li>
+                    <li>Crafted with premium materials for lasting comfort.</li>
+                    <li>Authentic design with attention to heritage details.</li>
+                  </ul>
                 </div>
-                <a href="/shop" className="text-xs font-bold uppercase tracking-[0.2em] border-b-2 border-black pb-1 mb-1">View All</a>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-                {recommendedProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
+            ) : (
+              <div className="text-center py-12 text-gray-400 text-sm italic">
+                No reviews yet. Be the first to review this product.
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recommended Products */}
+        {recommendedProducts.length > 0 && (
+          <div className="mt-16">
+            <h3 className="text-xl font-bold mb-8">Recommended Products</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {recommendedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
             </div>
-          </section>
+          </div>
         )}
       </main>
       <Footer />
