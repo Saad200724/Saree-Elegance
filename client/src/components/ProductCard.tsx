@@ -20,11 +20,11 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Link href={`/product/${product.id}`} className="group block h-full">
       <div className="relative h-full flex flex-col bg-white rounded-lg border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
         {/* Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+        <div className="relative aspect-square overflow-hidden bg-gray-50">
           <img 
             src={product.imageUrl} 
             alt={product.name}
-            className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
         </div>
 
