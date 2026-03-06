@@ -52,63 +52,58 @@ export default function Shop() {
         </div>
       </section>
 
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-6 lg:px-12 py-20">
         
-        {/* Filters Toolbar - Minimalist Floating */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-20">
-          
-          <div className="w-full md:w-1/3">
-             <div className="relative group">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-primary transition-colors" />
-                <Input 
-                  placeholder="Search the collection..." 
-                  className="pl-8 h-12 bg-transparent border-0 border-b border-gray-200 focus:border-primary rounded-none transition-all text-sm focus:ring-0 placeholder:italic placeholder:font-light"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-             </div>
-          </div>
-
-          <div className="flex items-center gap-8 w-full md:w-auto">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Curation</span>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="w-[200px] h-12 bg-transparent border-0 border-b border-gray-200 rounded-none text-xs font-bold uppercase tracking-widest focus:ring-0">
-                  <SelectValue placeholder="All Pieces" />
-                </SelectTrigger>
-                <SelectContent className="rounded-none border-gray-100">
-                  <SelectItem value="all" className="text-xs uppercase tracking-widest font-semibold">All Pieces</SelectItem>
-                  <SelectItem value="Saree" className="text-xs uppercase tracking-widest font-semibold">Sarees</SelectItem>
-                  <SelectItem value="Lehenga" className="text-xs uppercase tracking-widest font-semibold">Lehengas</SelectItem>
-                  <SelectItem value="Three Piece" className="text-xs uppercase tracking-widest font-semibold">Three Piece</SelectItem>
-                  <SelectItem value="Party Dress" className="text-xs uppercase tracking-widest font-semibold">Party Dress</SelectItem>
-                  <SelectItem value="Pakistani Dress" className="text-xs uppercase tracking-widest font-semibold">Pakistani Dress</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Filters Toolbar - Ultra Minimalist Center Aligned */}
+        <div className="flex flex-col items-center gap-12 mb-24">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.6em] text-primary">The Collection</h2>
+            <div className="flex items-center gap-8">
+              {["all", "Saree", "Lehenga", "Three Piece", "Party Dress", "Pakistani Dress"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={`text-[10px] font-bold uppercase tracking-[0.2em] pb-2 transition-all border-b-2 ${
+                    category === cat || (cat === "all" && !category)
+                      ? "border-black text-black"
+                      : "border-transparent text-gray-400 hover:text-black"
+                  }`}
+                >
+                  {cat === "all" ? "All Pieces" : cat}
+                </button>
+              ))}
             </div>
           </div>
-
+          
+          <div className="w-full max-w-md relative group">
+            <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
+            <Input 
+              placeholder="Search by name or aesthetic..." 
+              className="pl-8 h-12 bg-transparent border-0 border-b border-gray-100 focus:border-black rounded-none transition-all text-sm focus:ring-0 placeholder:italic placeholder:font-light text-center"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
-        {/* Product Grid - More air between cards */}
+        {/* Product Grid - Editorial Spacing */}
         {isLoading ? (
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
-              {[1,2,3,4,5,6,7,8].map(i => (
-                <div key={i} className="aspect-[4/5] bg-gray-100 animate-pulse" />
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="aspect-[3/4] bg-gray-50 animate-pulse" />
               ))}
            </div>
         ) : products?.length === 0 ? (
           <div className="text-center py-40">
-            <h3 className="text-xl font-heading font-light text-gray-400 italic">Our archives are currently empty for this selection.</h3>
+            <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-gray-300">No pieces found in this curation</h3>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
             {products?.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
-
       </div>
       <Footer />
     </div>

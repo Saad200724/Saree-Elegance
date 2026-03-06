@@ -17,63 +17,65 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/product/${product.id}`} className="group block h-full">
-      <div className="relative h-full flex flex-col bg-white overflow-hidden transition-all duration-500 border-none group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
-        
-        {/* New Arrival Badge - Elegant minimal style */}
-        {product.isNewArrival && (
-          <div className="absolute top-4 left-4 z-10">
-            <span className="bg-primary/90 backdrop-blur-md text-white text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-lg">
-              New
-            </span>
-          </div>
-        )}
-
-        {/* Image Container with high-end hover effect */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#F9F8F6]">
+    <Link href={`/product/${product.id}`} className="group block">
+      <div className="relative flex flex-col transition-all duration-700">
+        {/* Luxury Image Container */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#f4f4f4]">
           <img 
             src={product.imageUrl} 
             alt={product.name}
-            className="w-full h-full object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-105"
+            className="w-full h-full object-cover object-center transition-transform duration-[1.5s] ease-[cubic-bezier(0.2,0,0,1)] group-hover:scale-110"
           />
           
-          {/* Subtle Overlay on Hover */}
-          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {/* Subtle Gradeint Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Elegant Quick Add - Slide up effect */}
-          <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
+          {/* New Arrival - Minimalist Tab */}
+          {product.isNewArrival && (
+            <div className="absolute top-0 left-6">
+              <div className="bg-primary text-white text-[9px] font-bold uppercase tracking-[0.3em] px-3 py-4 [writing-mode:vertical-lr] shadow-xl">
+                New
+              </div>
+            </div>
+          )}
+
+          {/* Add to Cart - Luxury Minimalist Button */}
+          <div className="absolute inset-x-0 bottom-8 px-8 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)]">
             <Button 
               onClick={handleAddToCart}
               disabled={addToCart.isPending}
-              className="w-full bg-white/90 backdrop-blur-md text-primary hover:bg-primary hover:text-white border-none shadow-2xl transition-all duration-300 font-semibold tracking-wider text-xs h-12 rounded-none uppercase"
+              className="w-full bg-white text-black hover:bg-black hover:text-white border-none rounded-none h-12 text-[10px] font-bold uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(0,0,0,0.15)] transition-all duration-300"
             >
               {addToCart.isPending ? "Adding..." : (
                 <span className="flex items-center justify-center gap-2">
-                  <ShoppingBag className="w-4 h-4" />
-                  Quick Add
+                  Add to Cart
                 </span>
               )}
             </Button>
           </div>
         </div>
 
-        {/* Content - Sophisticated Typography */}
-        <div className="flex-1 p-5 flex flex-col items-center text-center space-y-2 bg-white">
-          <p className="text-[10px] text-accent font-bold uppercase tracking-[0.25em] mb-1">
-            {product.category}
-          </p>
-          <h3 className="font-heading font-semibold text-gray-900 text-base leading-tight group-hover:text-primary transition-colors duration-300">
-            {product.name}
-          </h3>
-          <div className="pt-1 flex items-center justify-center gap-3">
-            <span className="text-sm font-bold text-primary tracking-tight">
-              ৳{Number(product.price).toLocaleString()}
-            </span>
-            {product.originalPrice && (
-              <span className="text-xs text-gray-400 line-through font-light">
-                ৳{Number(product.originalPrice).toLocaleString()}
+        {/* Content - High-End Minimalist Typography */}
+        <div className="pt-6 pb-4 flex flex-col space-y-2">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1">
+              <h3 className="font-heading text-sm font-semibold text-gray-900 tracking-tight group-hover:text-primary transition-colors duration-300 uppercase">
+                {product.name}
+              </h3>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mt-1">
+                {product.category}
+              </p>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-bold text-gray-900">
+                ৳{Number(product.price).toLocaleString()}
               </span>
-            )}
+              {product.originalPrice && (
+                <span className="text-[10px] text-gray-400 line-through font-light mt-0.5">
+                  ৳{Number(product.originalPrice).toLocaleString()}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
