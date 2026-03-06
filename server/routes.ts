@@ -210,11 +210,13 @@ export async function registerRoutes(
   app.post(api.orders.create.path, async (req, res) => {
     try {
       const input = api.orders.create.input.parse(req.body);
-      const userId = (req.user as any)?.claims?.sub;
-      const sessionId = req.sessionID;
+      const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+      const sessionId = req.headers["x-session-id"] || req.sessionID;
+      
+      console.log("Creating order for User:", userId, "Session:", sessionId);
       
       // Get cart items to convert to order items
-      const cartItems = await storage.getCartItems(userId, sessionId);
+      const cartItems = await storage.getCartItems(userId, sessionId as string);
       if (cartItems.length === 0) {
         return res.status(400).json({ message: "Cart is empty" });
       }
@@ -231,14 +233,15 @@ export async function registerRoutes(
       }, orderItems);
 
       // Clear cart
-      await storage.clearCart(userId, sessionId);
+      await storage.clearCart(userId, sessionId as string);
 
       res.status(201).json(order);
     } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
-      throw err;
+      console.error("Order creation error:", err);
+      res.status(500).json({ message: "Failed to place order" });
     }
   });
 
