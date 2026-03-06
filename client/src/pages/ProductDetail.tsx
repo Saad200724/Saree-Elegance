@@ -39,74 +39,75 @@ export default function ProductDetail() {
   const decrement = () => setQuantity(q => Math.max(1, q - 1));
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafafa]">
+    <div className="min-h-screen flex flex-col bg-[#FDFCFB]">
       <Navbar />
       
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
           
-          {/* Image Section */}
-          <div className="sticky top-24">
-            <div className="aspect-[3/4] rounded-3xl overflow-hidden bg-white shadow-2xl shadow-gray-200/50 relative group border border-gray-100">
+          {/* Image Section - Takes up 7/12 columns for cinematic feel */}
+          <div className="lg:col-span-7 sticky top-32">
+            <div className="aspect-[4/5] bg-[#F9F8F6] overflow-hidden relative group">
               <img 
                 src={product.imageUrl} 
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
               />
-              <button className="absolute top-6 right-6 p-4 bg-white/90 backdrop-blur-md rounded-full text-gray-400 hover:text-red-500 hover:bg-white transition-all shadow-xl hover:scale-110 active:scale-95">
-                <Heart className="w-6 h-6" />
+              <button className="absolute top-8 right-8 p-4 bg-white/80 backdrop-blur-md rounded-full text-gray-400 hover:text-primary hover:bg-white transition-all duration-300 shadow-xl hover:scale-110 active:scale-95">
+                <Heart className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Info Section */}
-          <div className="flex flex-col pt-4">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="px-3 py-1 text-[10px] font-bold text-accent bg-accent/10 rounded-full tracking-widest uppercase">{product.category}</span>
+          {/* Info Section - 5/12 columns */}
+          <div className="lg:col-span-5 flex flex-col pt-4">
+            <div className="flex items-center gap-4 mb-8">
+              <span className="text-[11px] font-bold text-accent tracking-[0.3em] uppercase">{product.category}</span>
+              <div className="w-px h-4 bg-gray-200" />
               {product.stock > 0 ? (
-                <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  In Stock
+                <span className="flex items-center gap-2 text-[10px] font-semibold text-emerald-600 uppercase tracking-widest">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Available Exclusively
                 </span>
               ) : (
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase tracking-widest">Out of Stock</span>
+                <span className="text-[10px] font-semibold text-red-500 uppercase tracking-widest">Waitlist Only</span>
               )}
             </div>
             
-            <h1 className="font-heading text-5xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">{product.name}</h1>
+            <h1 className="font-heading text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-[1.15] tracking-tight">{product.name}</h1>
             
-            <div className="flex items-center gap-6 mb-8">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-4 h-4 ${i < 4 ? "text-amber-400 fill-amber-400" : "text-gray-200"}`} />
+                  <Star key={i} className={`w-3.5 h-3.5 ${i < 4 ? "text-primary fill-primary" : "text-gray-200"}`} />
                 ))}
               </div>
-              <span className="text-gray-400 text-sm font-medium hover:text-gray-600 transition-colors cursor-pointer underline underline-offset-4">{reviews?.length || 0} Professional Reviews</span>
+              <span className="text-gray-400 text-xs font-medium tracking-widest uppercase italic">{reviews?.length || 0} Verified Critiques</span>
             </div>
 
-            <div className="flex items-baseline gap-6 mb-10">
-              <span className="text-4xl font-black text-gray-900 tracking-tighter">৳{Number(product.price).toLocaleString()}</span>
+            <div className="flex items-baseline gap-6 mb-12 border-b border-gray-100 pb-10">
+              <span className="text-4xl font-bold text-primary tracking-tighter">৳{Number(product.price).toLocaleString()}</span>
               {product.originalPrice && (
-                <span className="text-2xl text-gray-300 line-through font-medium italic">৳{Number(product.originalPrice).toLocaleString()}</span>
+                <span className="text-xl text-gray-300 line-through font-light italic">৳{Number(product.originalPrice).toLocaleString()}</span>
               )}
             </div>
 
-            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-10">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">The Narrative</h3>
-              <p className="text-gray-500 leading-relaxed text-lg font-light">
-                {product.description}
+            <div className="mb-12">
+              <h3 className="text-[11px] font-bold text-gray-900 uppercase tracking-[0.2em] mb-4">The Narrative</h3>
+              <p className="text-gray-600 leading-relaxed text-lg font-light italic">
+                "{product.description}"
               </p>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-6 mb-12">
+            <div className="space-y-8">
               <div className="flex items-center gap-6">
-                <div className="flex items-center bg-white border border-gray-100 rounded-2xl p-1 shadow-sm">
-                  <button onClick={decrement} className="w-12 h-12 flex items-center justify-center hover:bg-gray-50 rounded-xl text-gray-500 transition-all hover:text-gray-900 active:scale-90">
+                <div className="flex items-center border border-gray-200 h-14 bg-white">
+                  <button onClick={decrement} className="w-14 h-full flex items-center justify-center hover:bg-gray-50 text-gray-400 transition-colors">
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-12 font-bold text-lg text-center text-gray-900">{quantity}</span>
-                  <button onClick={increment} className="w-12 h-12 flex items-center justify-center hover:bg-gray-50 rounded-xl text-gray-500 transition-all hover:text-gray-900 active:scale-90">
+                  <span className="w-10 font-semibold text-gray-900 text-center">{quantity}</span>
+                  <button onClick={increment} className="w-14 h-full flex items-center justify-center hover:bg-gray-50 text-gray-400 transition-colors">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
@@ -114,11 +115,21 @@ export default function ProductDetail() {
                 <Button 
                   onClick={handleAddToCart} 
                   disabled={addToCart.isPending || product.stock === 0}
-                  size="lg" 
-                  className="flex-1 bg-gray-900 hover:bg-black text-white text-base font-bold h-14 rounded-2xl shadow-xl shadow-gray-200 transition-all active:scale-[0.98]"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold h-14 rounded-none tracking-[0.2em] uppercase shadow-2xl shadow-primary/20 transition-all active:scale-[0.98]"
                 >
-                  {addToCart.isPending ? "Securing item..." : "Add to Collection"}
+                  {addToCart.isPending ? "Requesting..." : "Add to Collection"}
                 </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-white border border-gray-100 flex flex-col items-center text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">Shipping</span>
+                  <span className="text-xs text-gray-500 font-light">Worldwide Complimentary</span>
+                </div>
+                <div className="p-4 bg-white border border-gray-100 flex flex-col items-center text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">Authenticity</span>
+                  <span className="text-xs text-gray-500 font-light">Certified Artisan Made</span>
+                </div>
               </div>
             </div>
           </div>
@@ -126,12 +137,12 @@ export default function ProductDetail() {
 
         {/* Recommended Products */}
         {recommendedProducts.length > 0 && (
-          <div className="mt-32">
-            <div className="flex flex-col items-center mb-12">
-              <h2 className="font-heading text-3xl font-bold text-gray-900 mb-4 tracking-tight">Curated for You</h2>
-              <div className="h-1 w-20 bg-accent rounded-full" />
+          <div className="mt-40">
+            <div className="flex flex-col items-center mb-16">
+              <span className="text-accent text-[11px] font-bold uppercase tracking-[0.4em] mb-4">Refinement</span>
+              <h2 className="font-heading text-3xl font-bold text-gray-900 tracking-tight">Curated Accompaniments</h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
               {recommendedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
@@ -139,54 +150,47 @@ export default function ProductDetail() {
           </div>
         )}
 
-        {/* Tabs Section */}
-        <div className="mt-32 pt-20 border-t border-gray-100">
-          <div className="flex justify-center gap-12 mb-16">
-            <button 
-              onClick={() => setActiveTab('desc')}
-              className={`pb-4 font-heading font-bold text-sm tracking-widest uppercase transition-all relative ${activeTab === 'desc' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              Artisan Details
-              {activeTab === 'desc' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />}
-            </button>
-            <button 
-              onClick={() => setActiveTab('reviews')}
-              className={`pb-4 font-heading font-bold text-sm tracking-widest uppercase transition-all relative ${activeTab === 'reviews' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
-            >
-              Guest Reviews ({reviews?.length || 0})
-              {activeTab === 'reviews' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />}
-            </button>
+        {/* Tabs Section - Minimalist */}
+        <div className="mt-40 pt-20 border-t border-gray-100">
+          <div className="flex justify-center gap-16 mb-20">
+            {['desc', 'reviews'].map((tab) => (
+              <button 
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`pb-4 text-[11px] font-bold tracking-[0.3em] uppercase transition-all relative ${activeTab === tab ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                {tab === 'desc' ? 'Artisanship' : `Critiques (${reviews?.length || 0})`}
+                {activeTab === tab && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary" />}
+              </button>
+            ))}
           </div>
 
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             {activeTab === 'desc' ? (
-              <div className="prose prose-lg max-w-none text-gray-500 font-light leading-relaxed">
-                <p>{product.description}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                  <div className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm">
-                    <h4 className="text-gray-900 font-bold mb-3 uppercase tracking-wider text-xs">Exquisite Material</h4>
-                    <p className="text-sm">Finest grade heritage textiles selected for durability and comfort.</p>
-                  </div>
-                  <div className="bg-white p-6 rounded-2xl border border-gray-50 shadow-sm">
-                    <h4 className="text-gray-900 font-bold mb-3 uppercase tracking-wider text-xs">Artisan Crafted</h4>
-                    <p className="text-sm">Intricate detailing performed by master craftsmen with decades of experience.</p>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                <div className="space-y-6">
+                  <h4 className="text-primary font-bold text-[10px] uppercase tracking-[0.2em]">Heritage Materials</h4>
+                  <p className="text-gray-600 font-light leading-relaxed italic">"Selected from the finest looms, our textiles represent centuries of weaving tradition, offering a tactile experience that transcends modern alternatives."</p>
+                </div>
+                <div className="space-y-6">
+                  <h4 className="text-primary font-bold text-[10px] uppercase tracking-[0.2em]">The Master's Hand</h4>
+                  <p className="text-gray-600 font-light leading-relaxed italic">"Each stitch is a testament to the artisan's patience. Our pieces aren't manufactured; they are composed over weeks of meticulous handwork."</p>
                 </div>
               </div>
             ) : (
               <div className="space-y-12">
                 {reviews?.length === 0 ? (
-                  <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                    <p className="text-gray-400 font-medium italic">Be the first to share your experience with this piece.</p>
+                  <div className="text-center py-24 bg-gray-50/50">
+                    <p className="text-gray-400 text-xs font-medium uppercase tracking-widest italic">Awaiting your narrative</p>
                   </div>
                 ) : (
                   reviews?.map(review => (
-                    <div key={review.id} className="bg-white p-8 rounded-3xl border border-gray-50 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="font-bold text-gray-900 text-lg">{review.reviewerName}</span>
-                        <div className="flex text-amber-400">
+                    <div key={review.id} className="bg-white p-10 border border-gray-50">
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="font-bold text-gray-900 uppercase tracking-widest text-xs">{review.reviewerName}</span>
+                        <div className="flex gap-1 text-primary">
                           {[...Array(5)].map((_, i) => (
-                             <Star key={i} className={`w-4 h-4 ${i < review.rating ? "fill-current" : "text-gray-100"}`} />
+                             <Star key={i} className={`w-3 h-3 ${i < review.rating ? "fill-current" : "text-gray-100"}`} />
                           ))}
                         </div>
                       </div>
