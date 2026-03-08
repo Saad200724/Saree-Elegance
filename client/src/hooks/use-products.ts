@@ -2,14 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
 
-export function useProducts(filters?: { category?: string; search?: string }) {
+export function useProducts(filters?: { category?: string; search?: string; isNewArrival?: boolean }) {
   return useQuery({
     queryKey: [api.products.list.path, filters],
     queryFn: async () => {
-      // Clean undefined filters
       const params: Record<string, string> = {};
       if (filters?.category) params.category = filters.category;
       if (filters?.search) params.search = filters.search;
+      if (filters?.isNewArrival) params.isNewArrival = "true";
 
       const queryString = new URLSearchParams(params).toString();
       const url = `${api.products.list.path}?${queryString}`;

@@ -418,7 +418,14 @@ export default function Admin() {
                     <TableCell>
                       <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" />
                     </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col gap-1">
+                        <span>{product.name}</span>
+                        {(product as any).isNewArrival && (
+                          <Badge className="text-[10px] px-1.5 py-0 w-fit bg-emerald-50 text-emerald-700 border border-emerald-200" variant="outline">New Arrival</Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>৳{product.price}</TableCell>
                     <TableCell>{product.stock}</TableCell>

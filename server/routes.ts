@@ -105,7 +105,8 @@ export async function registerRoutes(
   app.get(api.products.list.path, async (req, res) => {
     const category = req.query.category as string | undefined;
     const search = req.query.search as string | undefined;
-    const products = await storage.getProducts(category, search);
+    const isNewArrival = req.query.isNewArrival === "true" ? true : undefined;
+    const products = await storage.getProducts(category, search, isNewArrival);
     res.json(products);
   });
 

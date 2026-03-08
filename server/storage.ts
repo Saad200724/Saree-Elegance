@@ -12,7 +12,7 @@ import { MongoProduct, MongoReview, MongoUser, MongoOrder, MongoCartItem, connec
 import { type UpsertUser, type User } from "@shared/models/auth";
 
 export interface IStorage {
-  getProducts(category?: string, search?: string): Promise<Product[]>;
+  getProducts(category?: string, search?: string, isNewArrival?: boolean): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   getReviews(productId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
@@ -32,12 +32,13 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getProducts(category?: string, search?: string): Promise<Product[]> {
+  async getProducts(category?: string, search?: string, isNewArrival?: boolean): Promise<Product[]> {
     try {
       await connectToMongoDB();
       let query: any = {};
       if (category) query.category = category;
       if (search) query.name = { $regex: search, $options: 'i' };
+      if (isNewArrival === true) query.isNewArrival = true;
       
       const mongoProducts = await MongoProduct.find(query).sort({ createdAt: -1 });
       return mongoProducts.map(p => {

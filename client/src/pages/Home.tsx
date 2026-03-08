@@ -12,7 +12,7 @@ import pakistaniCategory from "@/assets/images/pakistani-category.png";
 import alponaBg from "@assets/Alpona_withoutbg_1771979242690.png";
 
 export default function Home() {
-  const { data: newArrivals, isLoading } = useProducts({ search: "new" }); // Just fetching some products for now
+  const { data: newArrivals, isLoading } = useProducts({ isNewArrival: true });
   
   const sareeBanner = "/images/hero.png";
 
@@ -97,40 +97,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* New Arrivals */}
-      <section className="py-12 md:py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-6 md:mb-10">
-            <div>
-              <span className="text-accent font-bold tracking-wider uppercase text-[10px] md:text-xs mb-1 md:mb-2 block">Just In</span>
-              <h2 className="font-heading text-2xl md:text-3xl font-bold text-gray-900">Latest Collections</h2>
+      {/* New Arrivals — only shown when there are products marked isNewArrival */}
+      {(isLoading || (newArrivals && newArrivals.length > 0)) && (
+        <section className="py-12 md:py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-end mb-6 md:mb-10">
+              <div>
+                <span className="text-accent font-bold tracking-wider uppercase text-[10px] md:text-xs mb-1 md:mb-2 block">Just In</span>
+                <h2 className="font-heading text-2xl md:text-3xl font-bold text-gray-900">Latest Collections</h2>
+              </div>
+              <Link href="/shop" className="hidden md:flex items-center text-primary font-medium hover:text-accent transition-colors">
+                View All <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
             </div>
-            <Link href="/shop" className="hidden md:flex items-center text-primary font-medium hover:text-accent transition-colors">
-              View All <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </div>
 
-          {isLoading ? (
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+            {isLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                 {[1,2,3,4].map(i => (
                   <div key={i} className="h-48 md:h-96 bg-gray-200 animate-pulse rounded-xl" />
                 ))}
-             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-              {newArrivals?.slice(0, 4).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                {newArrivals!.slice(0, 4).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+
+            <div className="mt-8 text-center md:hidden">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/shop">View All Products</Link>
+              </Button>
             </div>
-          )}
-          
-          <div className="mt-8 text-center md:hidden">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/shop">View All Products</Link>
-            </Button>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Customer Reviews */}
       <section className="py-12 md:py-16 bg-white border-y border-gray-100 relative overflow-hidden">
