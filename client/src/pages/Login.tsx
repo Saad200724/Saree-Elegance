@@ -65,11 +65,13 @@ export default function Login() {
 
   useEffect(() => {
     if (isSignup) {
+      loginForm.reset();
       signupForm.reset();
     } else {
       loginForm.reset();
+      signupForm.reset();
     }
-  }, [isSignup, loginForm, signupForm]);
+  }, [isSignup]);
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
