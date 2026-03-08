@@ -23,9 +23,13 @@ export function useCreateOrder() {
 
   return useMutation({
     mutationFn: async (orderData: InsertOrder) => {
+      const sessionId = localStorage.getItem("x-session-id");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (sessionId) headers["x-session-id"] = sessionId;
+
       const res = await fetch(api.orders.create.path, {
         method: api.orders.create.method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(orderData),
         credentials: "include",
       });

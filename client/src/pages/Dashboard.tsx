@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Package, Clock, CheckCircle2, Truck, User, Settings, LogOut,
-  ShoppingBag, MapPin, Phone, Mail, Calendar, Eye, ChevronDown, ChevronUp
+  ShoppingBag, MapPin, Phone, Mail, Calendar, FileText, ChevronDown, ChevronUp
 } from "lucide-react";
+import { openInvoice } from "@/lib/invoice";
 
 interface UserProfile {
   id: string;
@@ -237,6 +238,19 @@ function OrdersSection() {
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); openInvoice(order); }}
+                      data-testid={`button-invoice-${order.id}`}
+                      className="text-xs font-bold gap-2"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      View Invoice
+                    </Button>
                   </div>
                 </CardContent>
               )}

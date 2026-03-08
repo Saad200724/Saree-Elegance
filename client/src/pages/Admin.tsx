@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { Loader2, Plus, Pencil, Trash2, Store, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Store, Upload, X, Image as ImageIcon, FileText } from "lucide-react";
+import { openInvoice } from "@/lib/invoice";
 
 export default function Admin() {
   const [password, setPassword] = useState("");
@@ -505,20 +506,32 @@ export default function Admin() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          defaultValue={order.status}
-                          onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
-                        >
-                          <SelectTrigger className="w-[110px] h-8 text-[10px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            defaultValue={order.status}
+                            onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-[10px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="processing">Processing</SelectItem>
+                              <SelectItem value="shipped">Shipped</SelectItem>
+                              <SelectItem value="delivered">Delivered</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => openInvoice(order)}
+                            data-testid={`button-admin-invoice-${order.id}`}
+                            title="View Invoice"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

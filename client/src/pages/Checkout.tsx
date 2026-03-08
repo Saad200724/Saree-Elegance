@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
@@ -53,6 +54,12 @@ export default function Checkout() {
     },
   });
 
+  useEffect(() => {
+    if (!authLoading && !cartLoading && (cartError || !cartItems || cartItems.length === 0)) {
+      setLocation("/cart");
+    }
+  }, [authLoading, cartLoading, cartError, cartItems, setLocation]);
+
   if (authLoading || cartLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -66,8 +73,7 @@ export default function Checkout() {
     );
   }
 
-  if (cartError || !cartItems || cartItems.length === 0) {
-    setLocation("/cart");
+  if (!cartItems || cartItems.length === 0) {
     return null;
   }
 
