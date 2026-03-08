@@ -17,7 +17,7 @@ import { Link, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -62,6 +62,14 @@ export default function Login() {
       confirmPassword: "",
     },
   });
+
+  useEffect(() => {
+    if (isSignup) {
+      signupForm.reset();
+    } else {
+      loginForm.reset();
+    }
+  }, [isSignup, loginForm, signupForm]);
 
   const onLoginSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
