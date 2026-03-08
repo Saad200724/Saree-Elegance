@@ -450,9 +450,11 @@ export class DatabaseStorage implements IStorage {
 
         await MongoOrder.create({
           ...orderData,
+          userId: orderData.userId,
           totalAmount: orderData.totalAmount.toString(),
           items: itemsWithDetails,
-          status: 'pending'
+          status: 'pending',
+          createdAt: new Date()
         });
       } catch (e) {
         console.error("Mongo Order Sync Error:", e);
