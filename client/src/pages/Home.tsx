@@ -65,7 +65,7 @@ export default function Home() {
 
           <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8">
             {/* Category 1 */}
-            <Link href="/sarees" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
+            <Link href="/saree" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
               <img src={sareeCategory} alt="Sarees" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-2 left-2 md:bottom-6 md:left-6 text-white">
@@ -75,7 +75,7 @@ export default function Home() {
             </Link>
 
             {/* Category 2 */}
-            <Link href="/lehengas" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
+            <Link href="/lehenga" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
               <img src={lehengaCategory} alt="Lehengas" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-2 left-2 md:bottom-6 md:left-6 text-white">
@@ -85,7 +85,7 @@ export default function Home() {
             </Link>
 
             {/* Category 3 */}
-            <Link href="/pakistani-dresses" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
+            <Link href="/pakistani-dress" className="group relative aspect-square rounded-lg md:rounded-xl overflow-hidden cursor-pointer">
               <img src={pakistaniCategory} alt="Pakistani Dress" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-80 group-hover:opacity-70 transition-opacity" />
               <div className="absolute bottom-2 left-2 md:bottom-6 md:left-6 text-white">

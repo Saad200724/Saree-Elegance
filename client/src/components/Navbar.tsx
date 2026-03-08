@@ -25,9 +25,9 @@ export default function Navbar() {
   const links = [
     { href: "/", label: "Home", icon: Home },
     { href: "/shop", label: "Shop", icon: Grid },
-    { href: "/sarees", label: "Sarees" },
-    { href: "/lehengas", label: "Lehengas" },
-    { href: "/pakistani-dresses", label: "Pakistani Dress" },
+    { href: "/saree", label: "Sarees" },
+    { href: "/lehenga", label: "Lehengas" },
+    { href: "/pakistani-dress", label: "Pakistani Dress" },
   ];
 
   return (
