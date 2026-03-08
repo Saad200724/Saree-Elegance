@@ -101,11 +101,11 @@ export default function ProductDetail() {
       <main className="flex-1 max-w-7xl mx-auto px-4 py-12 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
           <div className="space-y-6">
-            <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 group relative">
+            <div className="aspect-square rounded-[2.5rem] overflow-hidden bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 group relative">
               <img 
                 src={allImages[selectedImage] || product.imageUrl} 
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-contain transition-transform duration-700"
                 data-testid="img-product-main"
               />
               {product.isNewArrival && (
