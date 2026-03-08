@@ -37,12 +37,13 @@ const ProductSchema: Schema = new Schema({
   price: { type: String, required: true },
   originalPrice: { type: String },
   imageUrl: { type: String, required: true },
+  secondaryImages: { type: [String], default: [] },
   category: { type: String, required: true },
   stock: { type: Number, default: 0 },
   isNewArrival: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 }, {
-  bufferCommands: false // Disable buffering
+  bufferCommands: false
 });
 
 export const MongoProduct = mongoose.models.Product || mongoose.model('Product', ProductSchema);

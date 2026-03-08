@@ -10,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { Loader2, Plus, Pencil, Trash2, CheckCircle, Clock, Truck, Store, Upload } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Store, Upload, X, Image as ImageIcon } from "lucide-react";
 
 export default function Admin() {
   const [password, setPassword] = useState("");
@@ -20,6 +21,9 @@ export default function Admin() {
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [primaryImageUrl, setPrimaryImageUrl] = useState("");
+  const [secondaryImages, setSecondaryImages] = useState<string[]>([]);
+  const [uploadingSecondary, setUploadingSecondary] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -29,6 +33,13 @@ export default function Admin() {
     } else {
       toast({ title: "Invalid password", variant: "destructive" });
     }
+  };
+
+  const openProductDialog = (product: Product | null) => {
+    setEditingProduct(product);
+    setPrimaryImageUrl(product?.imageUrl || "");
+    setSecondaryImages((product as any)?.secondaryImages || []);
+    setIsProductDialogOpen(true);
   };
 
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
@@ -59,6 +70,9 @@ export default function Admin() {
       setIsProductDialogOpen(false);
       toast({ title: "Product created successfully" });
     },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
   });
 
   const updateMutation = useMutation({
@@ -79,6 +93,9 @@ export default function Admin() {
       setIsProductDialogOpen(false);
       setEditingProduct(null);
       toast({ title: "Product updated successfully" });
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
 
@@ -111,32 +128,57 @@ export default function Admin() {
     },
   });
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
+  const uploadImage = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
+    const res = await fetch("/api/admin/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    return data.url;
+  };
 
+  const handlePrimaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
     try {
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      
-      const imageUrlInput = document.getElementById('product-image-url') as HTMLInputElement;
-      if (imageUrlInput) {
-        imageUrlInput.value = data.url;
-        // Also manually trigger form change if needed
-      }
-      toast({ title: "Image uploaded successfully" });
-    } catch (err) {
+      const url = await uploadImage(file);
+      setPrimaryImageUrl(url);
+      toast({ title: "Primary image uploaded" });
+    } catch {
       toast({ title: "Upload failed", variant: "destructive" });
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSecondaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    if (secondaryImages.length + files.length > 3) {
+      toast({ title: "Maximum 3 secondary images allowed", variant: "destructive" });
+      return;
+    }
+    setUploadingSecondary(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadImage(file);
+        urls.push(url);
+      }
+      setSecondaryImages(prev => [...prev, ...urls].slice(0, 3));
+      toast({ title: `${urls.length} image(s) uploaded` });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setUploadingSecondary(false);
+    }
+  };
+
+  const removeSecondaryImage = (index: number) => {
+    setSecondaryImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -147,17 +189,21 @@ export default function Admin() {
       description: formData.get("description") as string,
       price: formData.get("price") as string,
       originalPrice: formData.get("originalPrice") as string || null,
-      imageUrl: formData.get("imageUrl") as string,
+      imageUrl: primaryImageUrl,
+      secondaryImages: secondaryImages,
       category: formData.get("category") as string,
       stock: parseInt(formData.get("stock") as string),
       isNewArrival: formData.get("isNewArrival") === "on",
     };
 
+    if (!data.imageUrl) {
+      toast({ title: "Please upload or enter a primary image URL", variant: "destructive" });
+      return;
+    }
+
     if (editingProduct) {
-      console.log("Updating product:", editingProduct.id, data);
       updateMutation.mutate({ id: editingProduct.id, data });
     } else {
-      console.log("Creating product:", data);
       createMutation.mutate(data);
     }
   };
@@ -172,12 +218,13 @@ export default function Admin() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <Input
+                data-testid="input-admin-password"
                 type="password"
                 placeholder="Enter admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <Button type="submit" className="w-full">Login</Button>
+              <Button data-testid="button-admin-login" type="submit" className="w-full">Login</Button>
             </form>
           </CardContent>
         </Card>
@@ -198,8 +245,8 @@ export default function Admin() {
 
       <Tabs defaultValue="products">
         <TabsList className="mb-8">
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="products" data-testid="tab-products">Products</TabsTrigger>
+          <TabsTrigger value="orders" data-testid="tab-orders">Orders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -207,11 +254,11 @@ export default function Admin() {
             <h2 className="text-2xl font-semibold">Manage Products</h2>
             <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditingProduct(null)}>
+                <Button data-testid="button-add-product" onClick={() => openProductDialog(null)}>
                   <Plus className="mr-2 h-4 w-4" /> Add Product
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
@@ -219,12 +266,12 @@ export default function Admin() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Name</label>
-                      <Input name="name" defaultValue={editingProduct?.name} required />
+                      <Input data-testid="input-product-name" name="name" defaultValue={editingProduct?.name} required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Category</label>
                       <Select name="category" defaultValue={editingProduct?.category || "Saree"}>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="select-category">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -236,7 +283,7 @@ export default function Admin() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Price</label>
-                      <Input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required />
+                      <Input data-testid="input-product-price" name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Original Price (Optional)</label>
@@ -246,65 +293,101 @@ export default function Admin() {
                       <label className="text-sm font-medium">Stock</label>
                       <Input name="stock" type="number" defaultValue={editingProduct?.stock || 0} required />
                     </div>
-                    <div className="space-y-2 col-span-2">
-                      <label className="text-sm font-medium">Product Image</label>
-                      <div className="flex flex-col gap-2">
-                        <Input 
-                          name="imageUrl" 
-                          key={editingProduct?.imageUrl}
-                          defaultValue={editingProduct?.imageUrl} 
-                          placeholder="Image URL" 
-                          id="product-image-url"
-                          required 
-                        />
-                        <div 
-                          className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
-                          onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary'); }}
-                          onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary'); }}
-                          onDrop={async (e) => {
-                            e.preventDefault();
-                            e.currentTarget.classList.remove('border-primary');
-                            const file = e.dataTransfer.files?.[0];
-                            if (file) {
-                              const mockEvent = { target: { files: [file] } } as any;
-                              await handleFileUpload(mockEvent);
-                            }
-                          }}
-                          onClick={() => document.getElementById('file-upload-input')?.click()}
-                        >
-                          {uploading ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span>Uploading...</span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <Upload className="h-6 w-6 text-gray-400" />
-                              <p className="text-sm text-gray-500">Drag & drop or click to upload</p>
-                            </div>
-                          )}
-                          <input
-                            id="file-upload-input"
-                            type="file"
-                            className="hidden"
-                            onChange={handleFileUpload}
-                            accept="image/*"
-                            disabled={uploading}
-                          />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Primary Image (Required)</label>
+                    <div className="flex gap-2">
+                      <Input
+                        data-testid="input-primary-image"
+                        value={primaryImageUrl}
+                        onChange={(e) => setPrimaryImageUrl(e.target.value)}
+                        placeholder="Image URL or upload below"
+                      />
+                    </div>
+                    <div
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                      onClick={() => document.getElementById('primary-upload')?.click()}
+                    >
+                      {uploading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Uploading...</span>
                         </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Enter a URL above or drag/upload an image file</p>
+                      ) : primaryImageUrl ? (
+                        <div className="flex items-center gap-4">
+                          <img src={primaryImageUrl} alt="Primary" className="w-20 h-20 object-cover rounded" />
+                          <span className="text-sm text-green-600 font-medium">Primary image set</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="h-6 w-6 text-gray-400" />
+                          <p className="text-sm text-gray-500">Click to upload primary image</p>
+                        </div>
+                      )}
+                      <input
+                        id="primary-upload"
+                        type="file"
+                        className="hidden"
+                        onChange={handlePrimaryUpload}
+                        accept="image/*"
+                        disabled={uploading}
+                      />
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Secondary Images (Up to 3)</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {secondaryImages.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={url} alt={`Secondary ${idx + 1}`} className="w-full h-24 object-cover rounded-lg border" />
+                          <button
+                            type="button"
+                            onClick={() => removeSecondaryImage(idx)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                      {secondaryImages.length < 3 && (
+                        <div
+                          className="h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                          onClick={() => document.getElementById('secondary-upload')?.click()}
+                        >
+                          {uploadingSecondary ? (
+                            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                          ) : (
+                            <>
+                              <ImageIcon className="h-5 w-5 text-gray-400" />
+                              <span className="text-[10px] text-gray-400 mt-1">Add image</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      id="secondary-upload"
+                      type="file"
+                      className="hidden"
+                      onChange={handleSecondaryUpload}
+                      accept="image/*"
+                      multiple
+                      disabled={uploadingSecondary}
+                    />
+                    <p className="text-xs text-muted-foreground">{secondaryImages.length}/3 secondary images added</p>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Description</label>
-                    <Textarea name="description" defaultValue={editingProduct?.description} required />
+                    <Textarea data-testid="input-product-description" name="description" defaultValue={editingProduct?.description} required />
                   </div>
                   <div className="flex items-center space-x-2">
                     <input type="checkbox" name="isNewArrival" id="isNewArrival" defaultChecked={editingProduct?.isNewArrival || false} />
                     <label htmlFor="isNewArrival" className="text-sm font-medium">New Arrival</label>
                   </div>
-                  <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
+                  <Button data-testid="button-submit-product" type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
                     {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {editingProduct ? "Update Product" : "Create Product"}
                   </Button>
@@ -324,23 +407,31 @@ export default function Admin() {
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
+                  <TableHead>Images</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products?.map((product) => (
                   <TableRow key={product.id}>
-                    <TableCell><img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" /></TableCell>
+                    <TableCell>
+                      <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                    </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>৳{product.price}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell>
+                      <span className="text-xs text-gray-500">
+                        1 + {(product as any).secondaryImages?.length || 0}
+                      </span>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="icon" onClick={() => { setEditingProduct(product); setIsProductDialogOpen(true); }}>
+                        <Button variant="outline" size="icon" onClick={() => openProductDialog(product)} data-testid={`button-edit-product-${product.id}`}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="icon" className="text-destructive" onClick={() => deleteMutation.mutate(product.id)}>
+                        <Button variant="outline" size="icon" className="text-destructive" onClick={() => deleteMutation.mutate(product.id)} data-testid={`button-delete-product-${product.id}`}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -403,10 +494,10 @@ export default function Admin() {
                       </TableCell>
                       <TableCell className="font-bold text-sm text-[#3A5A1F]">৳{Number(order.totalAmount).toLocaleString()}</TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           className="capitalize text-[10px] px-2 py-0"
                           variant={
-                            order.status === "delivered" ? "default" : 
+                            order.status === "delivered" ? "default" :
                             order.status === "pending" ? "destructive" : "secondary"
                           }
                         >
@@ -414,130 +505,20 @@ export default function Admin() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-2">
-                          <Select
-                            defaultValue={order.status}
-                            onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
-                          >
-                            <SelectTrigger className="w-[110px] h-8 text-[10px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="processing">Processing</SelectItem>
-                              <SelectItem value="shipped">Shipped</SelectItem>
-                              <SelectItem value="delivered">Delivered</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 text-[10px] font-bold"
-                            onClick={() => {
-                              const win = window.open('', '_blank');
-                              if (win) {
-                                win.document.write(`
-                                  <html>
-                                    <head>
-                                      <title>Invoice - ${order.id}</title>
-                                      <style>
-                                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-                                        .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, .15); }
-                                        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #7FB432; padding-bottom: 20px; margin-bottom: 30px; }
-                                        .logo { color: #7FB432; font-weight: bold; font-size: 24px; }
-                                        .details { display: grid; grid-template-cols: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-                                        .details h3 { border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; color: #3A5A1F; }
-                                        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                                        th { background: #F4F8EF; text-align: left; padding: 12px; border-bottom: 2px solid #7FB432; }
-                                        td { padding: 12px; border-bottom: 1px solid #eee; }
-                                        .total-section { float: right; width: 250px; }
-                                        .total-row { display: flex; justify-content: space-between; padding: 5px 0; }
-                                        .grand-total { font-size: 1.4em; font-weight: bold; color: #3A5A1F; border-top: 2px solid #7FB432; margin-top: 10px; padding-top: 10px; }
-                                        .footer { margin-top: 80px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
-                                        @media print { .no-print { display: none; } }
-                                      </style>
-                                    </head>
-                                    <body>
-                                      <div class="invoice-box">
-                                        <div class="header">
-                                          <div>
-                                            <div class="logo">LOGO</div>
-                                            <p>Order ID: <strong>#${order.id}</strong></p>
-                                            <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                                          </div>
-                                          <div style="text-align: right">
-                                            <h2 style="color: #3A5A1F; margin: 0;">INVOICE</h2>
-                                            <p>Your Store Name<br>Contact: 01405-045023<br>Dhaka, Bangladesh</p>
-                                          </div>
-                                        </div>
-                                        <div class="details">
-                                          <div>
-                                            <h3>Billing To:</h3>
-                                            <p><strong>${order.firstName} ${order.lastName}</strong><br>
-                                            Phone: ${order.phone}<br>
-                                            Email: ${order.email}</p>
-                                          </div>
-                                          <div>
-                                            <h3>Shipping Address:</h3>
-                                            <p>${order.address}<br>
-                                            ${order.upazila}, ${order.district}<br>
-                                            ${order.division}</p>
-                                          </div>
-                                        </div>
-                                        <table>
-                                          <thead>
-                                            <tr>
-                                              <th>Product Details</th>
-                                              <th style="text-align: center">Quantity</th>
-                                              <th style="text-align: right">Unit Price</th>
-                                              <th style="text-align: right">Amount</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            ${order.items.map((item: any) => `
-                                              <tr>
-                                                <td>${item.product?.name || 'Product'}</td>
-                                                <td style="text-align: center">${item.quantity}</td>
-                                                <td style="text-align: right">৳${Number(item.price).toLocaleString()}</td>
-                                                <td style="text-align: right">৳${(item.quantity * Number(item.price)).toLocaleString()}</td>
-                                              </tr>
-                                            `).join('')}
-                                          </tbody>
-                                        </table>
-                                        <div class="total-section">
-                                          <div class="total-row">
-                                            <span>Subtotal:</span>
-                                            <span>৳${(Number(order.totalAmount) - 130).toLocaleString()}</span>
-                                          </div>
-                                          <div class="total-row">
-                                            <span>Delivery Fee:</span>
-                                            <span>৳130</span>
-                                          </div>
-                                          <div class="total-row grand-total">
-                                            <span>Total:</span>
-                                            <span>৳${Number(order.totalAmount).toLocaleString()}</span>
-                                          </div>
-                                          <p style="font-size: 11px; margin-top: 15px;">Payment Method: <strong>${order.paymentMethod}</strong></p>
-                                        </div>
-                                        <div style="clear: both;"></div>
-                                        <div class="footer">
-                                          <p>This is a computer generated invoice and does not require a signature.</p>
-                                          <p>Thank you for shopping with us!</p>
-                                        </div>
-                                      </div>
-                                      <div class="no-print" style="margin-top: 20px; text-align: center;">
-                                        <button onclick="window.print()" style="padding: 10px 20px; background: #7FB432; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Print Invoice</button>
-                                      </div>
-                                    </body>
-                                  </html>
-                                `);
-                                win.document.close();
-                              }
-                            }}
-                          >
-                            Invoice
-                          </Button>
-                        </div>
+                        <Select
+                          defaultValue={order.status}
+                          onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
+                        >
+                          <SelectTrigger className="w-[110px] h-8 text-[10px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                     </TableRow>
                   ))}

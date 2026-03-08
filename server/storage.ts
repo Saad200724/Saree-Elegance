@@ -41,7 +41,6 @@ export class DatabaseStorage implements IStorage {
       
       const mongoProducts = await MongoProduct.find(query).sort({ createdAt: -1 });
       return mongoProducts.map(p => {
-        // Deterministic hash of _id to keep IDs stable during a session
         let hash = 0;
         const idStr = p._id.toString();
         for (let i = 0; i < idStr.length; i++) {
@@ -55,6 +54,7 @@ export class DatabaseStorage implements IStorage {
           price: p.price,
           originalPrice: p.originalPrice || null,
           imageUrl: p.imageUrl,
+          secondaryImages: p.secondaryImages || [],
           category: p.category,
           stock: p.stock,
           isNewArrival: p.isNewArrival,
@@ -76,6 +76,7 @@ export class DatabaseStorage implements IStorage {
         price: product.price.toString(),
         originalPrice: product.originalPrice?.toString(),
         imageUrl: product.imageUrl,
+        secondaryImages: product.secondaryImages || [],
         category: product.category,
         stock: product.stock,
         isNewArrival: product.isNewArrival
@@ -95,6 +96,7 @@ export class DatabaseStorage implements IStorage {
         price: newMongoProduct.price,
         originalPrice: newMongoProduct.originalPrice || null,
         imageUrl: newMongoProduct.imageUrl,
+        secondaryImages: newMongoProduct.secondaryImages || [],
         category: newMongoProduct.category,
         stock: newMongoProduct.stock,
         isNewArrival: newMongoProduct.isNewArrival,
@@ -133,6 +135,7 @@ export class DatabaseStorage implements IStorage {
       if (product.price !== undefined) updateData.price = product.price.toString();
       if (product.originalPrice !== undefined) updateData.originalPrice = product.originalPrice?.toString();
       if (product.imageUrl !== undefined) updateData.imageUrl = product.imageUrl;
+      if (product.secondaryImages !== undefined) updateData.secondaryImages = product.secondaryImages;
       if (product.category !== undefined) updateData.category = product.category;
       if (product.stock !== undefined) updateData.stock = product.stock;
       if (product.isNewArrival !== undefined) updateData.isNewArrival = product.isNewArrival;
@@ -161,6 +164,7 @@ export class DatabaseStorage implements IStorage {
         price: updated.price,
         originalPrice: updated.originalPrice || null,
         imageUrl: updated.imageUrl,
+        secondaryImages: updated.secondaryImages || [],
         category: updated.category,
         stock: updated.stock,
         isNewArrival: updated.isNewArrival,

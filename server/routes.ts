@@ -8,21 +8,44 @@ import { insertProductSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import bcrypt from "bcryptjs";
+import session from "express-session";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // === MongoDB Auth Routes ===
+  app.use(session({
+    secret: process.env.SESSION_SECRET || "chandrabati-secret-key-2024",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    },
+  }));
+
   app.post("/api/register", async (req, res) => {
     try {
       const { email, password, name, phone, address } = req.body;
+      if (!email || !password || !name) {
+        return res.status(400).json({ message: "Email, password, and name are required" });
+      }
       const existing = await MongoUser.findOne({ email });
       if (existing) return res.status(400).json({ message: "Email already exists" });
-      
-      const user = await MongoUser.create({ email, password, name, phone, address });
-      res.status(201).json({ message: "User registered in MongoDB", id: user._id });
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await MongoUser.create({ email, password: hashedPassword, name, phone, address });
+
+      (req.session as any).userId = user._id.toString();
+      (req.session as any).userEmail = user.email;
+      (req.session as any).userName = user.name;
+
+      res.status(201).json({ message: "Account created successfully", email: user.email, name: user.name });
     } catch (err: any) {
+      console.error("Register error:", err);
       res.status(500).json({ message: err.message });
     }
   });
@@ -30,15 +53,55 @@ export async function registerRoutes(
   app.post("/api/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      const user = await MongoUser.findOne({ email, password });
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      const user = await MongoUser.findOne({ email });
       if (!user) return res.status(401).json({ message: "Invalid credentials" });
-      res.json({ message: "Logged in successfully", email: user.email });
+
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        const directMatch = user.password === password;
+        if (!directMatch) {
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+        const hashed = await bcrypt.hash(password, 10);
+        await MongoUser.findByIdAndUpdate(user._id, { password: hashed });
+      }
+
+      (req.session as any).userId = user._id.toString();
+      (req.session as any).userEmail = user.email;
+      (req.session as any).userName = user.name;
+
+      res.json({ message: "Logged in successfully", email: user.email, name: user.name });
     } catch (err: any) {
+      console.error("Login error:", err);
       res.status(500).json({ message: err.message });
     }
   });
 
-  // === Products ===
+  app.get("/api/auth/user", (req, res) => {
+    const sess = req.session as any;
+    if (sess?.userId) {
+      return res.json({
+        id: sess.userId,
+        email: sess.userEmail,
+        name: sess.userName,
+      });
+    }
+    res.status(401).json({ message: "Not authenticated" });
+  });
+
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
   app.get(api.products.list.path, async (req, res) => {
     const category = req.query.category as string | undefined;
     const search = req.query.search as string | undefined;
@@ -46,7 +109,6 @@ export async function registerRoutes(
     res.json(products);
   });
 
-  // === Admin Products ===
   const storage_disk = multer.diskStorage({
     destination: function (req: any, file: any, cb: any) {
       const uploadPath = path.join(process.cwd(), "public", "images");
@@ -67,14 +129,20 @@ export async function registerRoutes(
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    // Ensure the path is correct for the frontend
     const url = `/images/${req.file.filename}`;
     res.json({ url });
   });
 
   app.post("/api/admin/products", async (req, res) => {
     try {
-      const input = insertProductSchema.parse(req.body);
+      const body = { ...req.body };
+      if (body.secondaryImages && typeof body.secondaryImages === 'string') {
+        body.secondaryImages = JSON.parse(body.secondaryImages);
+      }
+      if (Array.isArray(body.secondaryImages) && body.secondaryImages.length > 3) {
+        body.secondaryImages = body.secondaryImages.slice(0, 3);
+      }
+      const input = insertProductSchema.parse(body);
       const product = await storage.createProduct(input);
       res.status(201).json(product);
     } catch (err) {
@@ -89,7 +157,14 @@ export async function registerRoutes(
   app.patch("/api/admin/products/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const input = insertProductSchema.partial().parse(req.body);
+      const body = { ...req.body };
+      if (body.secondaryImages && typeof body.secondaryImages === 'string') {
+        body.secondaryImages = JSON.parse(body.secondaryImages);
+      }
+      if (Array.isArray(body.secondaryImages) && body.secondaryImages.length > 3) {
+        body.secondaryImages = body.secondaryImages.slice(0, 3);
+      }
+      const input = insertProductSchema.partial().parse(body);
       const updated = await storage.updateProduct(id, input);
       if (!updated) return res.status(404).json({ message: "Product not found" });
       res.json(updated);
@@ -101,8 +176,6 @@ export async function registerRoutes(
       res.status(500).json({ message: "Internal server error" });
     }
   });
-
-  // Duplicate upload route removed
 
   app.delete(api.admin.products.delete.path, async (req, res) => {
     const id = parseInt(req.params.id);
@@ -116,7 +189,6 @@ export async function registerRoutes(
     res.json(product);
   });
 
-  // === Reviews ===
   app.get(api.reviews.list.path, async (req, res) => {
     const reviews = await storage.getReviews(Number(req.params.id));
     res.json(reviews);
@@ -125,6 +197,15 @@ export async function registerRoutes(
   app.post(api.reviews.create.path, async (req, res) => {
     try {
       const input = api.reviews.create.input.parse(req.body);
+      if (!input.rating || input.rating < 1 || input.rating > 5) {
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      }
+      if (!input.reviewerName || input.reviewerName.trim().length < 1) {
+        return res.status(400).json({ message: "Reviewer name is required" });
+      }
+      if (!input.comment || input.comment.trim().length < 1) {
+        return res.status(400).json({ message: "Comment is required" });
+      }
       const review = await storage.createReview({
         ...input,
         productId: Number(req.params.id),
@@ -138,22 +219,19 @@ export async function registerRoutes(
     }
   });
 
-  // === Cart ===
   app.get(api.cart.list.path, async (req, res) => {
-    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const userId = (req.session as any)?.userId || (req.user as any)?._id?.toString();
     const sessionId = req.headers["x-session-id"] || req.sessionID;
-    console.log("Route GET /api/cart - UserID:", userId, "SessionID:", sessionId);
     const items = await storage.getCartItems(userId, sessionId as string);
     res.json(items);
   });
 
   app.post(api.cart.addItem.path, async (req, res) => {
     try {
-      const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+      const userId = (req.session as any)?.userId || (req.user as any)?._id?.toString();
       const sessionId = req.headers["x-session-id"] || req.sessionID;
       const input = api.cart.addItem.input.parse(req.body);
-      
-      console.log("Route POST /api/cart - UserID:", userId, "SessionID:", sessionId, "Body:", req.body);
+
       const item = await storage.addToCart({
         ...input,
         userId,
@@ -169,7 +247,7 @@ export async function registerRoutes(
   });
 
   app.patch(api.cart.updateItem.path, async (req, res) => {
-    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const userId = (req.session as any)?.userId || (req.user as any)?._id?.toString();
     const sessionId = req.headers["x-session-id"] || req.sessionID;
     const input = api.cart.updateItem.input.parse(req.body);
     const updated = await storage.updateCartItem(Number(req.params.id), input.quantity, userId, sessionId as string);
@@ -178,23 +256,14 @@ export async function registerRoutes(
   });
 
   app.delete(api.cart.removeItem.path, async (req, res) => {
-    const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+    const userId = (req.session as any)?.userId || (req.user as any)?._id?.toString();
     const sessionId = req.headers["x-session-id"] || req.sessionID;
     await storage.removeFromCart(Number(req.params.id), userId, sessionId as string);
     res.status(204).send();
   });
 
-  app.get("/api/auth/user", (req, res) => {
-    // Since we're using a custom session-less/simple auth for now
-    // we might need to check how the user is being persisted.
-    // If the user is logged in via /api/login, we should have something in the session or a cookie.
-    // For now, let's just return a 401 if not found, but we need to find where the user is stored.
-    res.status(401).send("Not authenticated");
-  });
   app.get(api.orders.list.path, async (req, res) => {
-    const userId = (req.user as any)?.claims?.sub;
-    // If it's an admin request (we should ideally check for admin role)
-    // For now, if no userId is provided or if we're in admin context, return all
+    const userId = (req.session as any)?.userId;
     const orders = await storage.getOrders(userId);
     res.json(orders);
   });
@@ -210,12 +279,9 @@ export async function registerRoutes(
   app.post(api.orders.create.path, async (req, res) => {
     try {
       const input = api.orders.create.input.parse(req.body);
-      const userId = (req.user as any)?._id?.toString() || (req.user as any)?.claims?.sub;
+      const userId = (req.session as any)?.userId || (req.user as any)?._id?.toString();
       const sessionId = req.headers["x-session-id"] || req.sessionID;
-      
-      console.log("Creating order for User:", userId, "Session:", sessionId);
-      
-      // Get cart items to convert to order items
+
       const cartItems = await storage.getCartItems(userId, sessionId as string);
       if (cartItems.length === 0) {
         return res.status(400).json({ message: "Cart is empty" });
@@ -232,9 +298,7 @@ export async function registerRoutes(
         userId,
       }, orderItems);
 
-      // Clear cart
       await storage.clearCart(userId, sessionId as string);
-
       res.status(201).json(order);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -244,10 +308,6 @@ export async function registerRoutes(
       res.status(500).json({ message: "Failed to place order" });
     }
   });
-
-  // Seed Data
-  // seedDatabase no longer needed as we use Mongo directly and don't want to re-seed on every restart
-  // await seedDatabase();
 
   return httpServer;
 }

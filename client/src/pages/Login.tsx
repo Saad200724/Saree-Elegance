@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Mail, User, Phone, MapPin, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Lock, Mail, User, Phone, MapPin } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
-import alponaBg from "@assets/Alpona_withoutbg_1771979242690.png";
-import { apiRequest } from "@/lib/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -42,7 +42,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function Login() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isSignup = location === "/signup";
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -62,9 +64,20 @@ export default function Login() {
   });
 
   const onLoginSubmit = async (data: LoginFormValues) => {
+    setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/login", data);
-      toast({ title: "Success", description: "Logged in successfully" });
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Invalid credentials");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({ title: "Welcome back!", description: "Logged in successfully" });
       setLocation("/");
     } catch (error: any) {
       toast({ 
@@ -72,12 +85,31 @@ export default function Login() {
         description: error.message || "Invalid credentials",
         variant: "destructive" 
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const onSignupSubmit = async (data: SignupFormValues) => {
+    setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/register", data);
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          password: data.password,
+        }),
+        credentials: "include",
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Registration failed");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: "Account Created", description: "Welcome to চন্দ্রাবতী!" });
       setLocation("/");
     } catch (error: any) {
@@ -86,6 +118,8 @@ export default function Login() {
         description: error.message || "Email might already be in use",
         variant: "destructive" 
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -94,15 +128,6 @@ export default function Login() {
       <Navbar />
       
       <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div 
-          className="absolute top-0 left-0 w-64 h-64 opacity-5 pointer-events-none -translate-x-1/2 -translate-y-1/2 rotate-12"
-          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
-        />
-        <div 
-          className="absolute bottom-0 right-0 w-96 h-96 opacity-5 pointer-events-none translate-x-1/4 translate-y-1/4 -rotate-12"
-          style={{ backgroundImage: `url(${alponaBg})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat' }}
-        />
-
         <div className="max-w-md w-full relative z-20">
           <Card className="border-border/40 shadow-2xl shadow-primary/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/90">
             <CardHeader className="space-y-1 pb-4 text-center">
@@ -126,7 +151,7 @@ export default function Login() {
                             <User className="h-3 w-3 text-accent" /> Full Name
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="John Doe" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-name" placeholder="Your full name" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -141,7 +166,7 @@ export default function Login() {
                             <Mail className="h-3 w-3 text-accent" /> Email
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="email@example.com" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-email" placeholder="email@example.com" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -156,7 +181,7 @@ export default function Login() {
                             <Phone className="h-3 w-3 text-accent" /> Phone
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="01XXXXXXXXX" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-phone" placeholder="01XXXXXXXXX" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -172,9 +197,10 @@ export default function Login() {
                           </FormLabel>
                           <FormControl>
                             <textarea 
+                              data-testid="input-address"
                               placeholder="Full Delivery Address" 
                               {...field} 
-                              className="w-full min-h-[80px] p-2 rounded-lg border border-gray-300 focus:ring-primary text-black bg-white opacity-100 text-sm" 
+                              className="w-full min-h-[80px] p-2 rounded-lg border border-gray-300 focus:ring-primary text-black bg-white text-sm" 
                             />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
@@ -190,7 +216,7 @@ export default function Login() {
                             <Lock className="h-3 w-3 text-accent" /> Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-password" type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
@@ -205,14 +231,14 @@ export default function Login() {
                             <Lock className="h-3 w-3 text-accent" /> Confirm Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-confirm-password" type="password" {...field} className="h-10 rounded-lg border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage className="text-[10px]" />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full btn-accent mt-4 h-11 text-lg" disabled={signupForm.formState.isSubmitting}>
-                      {signupForm.formState.isSubmitting ? "Creating..." : "Sign Up"}
+                    <Button data-testid="button-signup" type="submit" className="w-full btn-accent mt-4 h-11 text-lg" disabled={isSubmitting}>
+                      {isSubmitting ? "Creating..." : "Sign Up"}
                     </Button>
                   </form>
                 </Form>
@@ -228,7 +254,7 @@ export default function Login() {
                             <Mail className="h-4 w-4 text-accent" /> Email
                           </FormLabel>
                           <FormControl>
-                            <Input placeholder="name@example.com" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-login-email" placeholder="name@example.com" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -243,14 +269,14 @@ export default function Login() {
                             <Lock className="h-4 w-4 text-accent" /> Password
                           </FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white opacity-100" />
+                            <Input data-testid="input-login-password" type="password" placeholder="••••••••" {...field} className="h-12 rounded-xl border-gray-300 focus:ring-primary text-black bg-white" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full btn-primary mt-4 h-12 text-lg">
-                      Sign In
+                    <Button data-testid="button-login" type="submit" className="w-full btn-primary mt-4 h-12 text-lg" disabled={isSubmitting}>
+                      {isSubmitting ? "Signing in..." : "Sign In"}
                     </Button>
                   </form>
                 </Form>
@@ -262,6 +288,7 @@ export default function Login() {
                   <Link 
                     href={isSignup ? "/login" : "/signup"} 
                     className="text-primary font-bold hover:text-accent transition-colors"
+                    data-testid="link-toggle-auth"
                   >
                     {isSignup ? "Login here" : "Sign up here"}
                   </Link>

@@ -19,9 +19,10 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   description: text("description").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  originalPrice: decimal("original_price", { precision: 10, scale: 2 }), // For discounts
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
   imageUrl: text("image_url").notNull(),
-  category: text("category").notNull(), // Saree, Lehenga, Three Piece, Party Dress
+  secondaryImages: text("secondary_images").array().default([]),
+  category: text("category").notNull(),
   stock: integer("stock").notNull().default(0),
   isNewArrival: boolean("is_new_arrival").default(false),
   createdAt: timestamp("created_at").defaultNow(),
