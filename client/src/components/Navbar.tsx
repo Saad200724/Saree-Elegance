@@ -174,9 +174,9 @@ export default function Navbar() {
           </div>
           <span className="text-[10px] font-medium">Cart</span>
         </Link>
-        <Link href="/login" className={`flex flex-col items-center gap-1 ${location === "/login" ? "text-accent" : "text-gray-500"}`}>
+        <Link href={user ? "/dashboard" : "/login"} className={`flex flex-col items-center gap-1 ${(location === "/login" || location === "/dashboard") ? "text-accent" : "text-gray-500"}`}>
           <User className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Profile</span>
+          <span className="text-[10px] font-medium">{user ? "Account" : "Profile"}</span>
         </Link>
         <Link href="/contact" className={`flex flex-col items-center gap-1 ${location === "/contact" ? "text-accent" : "text-gray-500"}`}>
           <MessageCircle className="h-5 w-5" />

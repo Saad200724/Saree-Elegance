@@ -19,6 +19,7 @@ A full-stack e-commerce platform for Sarees, Lehengas, and Pakistani Dresses bui
 - **Multi-image products**: 1 primary + up to 3 secondary images
 - **Product reviews**: Anyone can submit reviews with name, rating (1-5), and comment
 - **User authentication**: Session-based auth with bcrypt password hashing
+- **User dashboard**: Order tracking with stats, expandable details, order timeline, profile editing
 - Responsive UI with mobile bottom navigation
 
 ## Authentication
@@ -42,6 +43,7 @@ A full-stack e-commerce platform for Sarees, Lehengas, and Pakistani Dresses bui
 - `client/src/pages/Admin.tsx` - Admin dashboard
 - `client/src/pages/ProductDetail.tsx` - Product detail with gallery & reviews
 - `client/src/pages/Login.tsx` - Login/Signup forms
+- `client/src/pages/Dashboard.tsx` - User dashboard (orders + profile)
 - `client/src/hooks/use-auth.ts` - Authentication hook
 
 ## Connectivity

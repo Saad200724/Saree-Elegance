@@ -1,10 +1,19 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { api, type InsertOrder } from "@shared/routes";
+import type { Order } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 export function useOrders() {
   return useQuery<(Order & { items: any[] })[]>({
     queryKey: [api.orders.list.path],
+    queryFn: async () => {
+      const res = await fetch(api.orders.list.path, { credentials: "include" });
+      if (!res.ok) {
+        if (res.status === 401) return [];
+        throw new Error("Failed to fetch orders");
+      }
+      return res.json();
+    },
   });
 }
 

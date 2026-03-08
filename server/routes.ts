@@ -262,6 +262,68 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  app.get("/api/user/orders", async (req, res) => {
+    const sess = req.session as any;
+    if (!sess?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const orders = await storage.getOrders(sess.userId);
+    res.json(orders);
+  });
+
+  app.get("/api/user/profile", async (req, res) => {
+    const sess = req.session as any;
+    if (!sess?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const user = await MongoUser.findById(sess.userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json({
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        createdAt: user.createdAt,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.patch("/api/user/profile", async (req, res) => {
+    const sess = req.session as any;
+    if (!sess?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const { name, phone, address } = req.body;
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (phone !== undefined) updateData.phone = phone;
+      if (address !== undefined) updateData.address = address;
+
+      const updated = await MongoUser.findByIdAndUpdate(
+        sess.userId,
+        { $set: updateData },
+        { new: true }
+      );
+      if (!updated) return res.status(404).json({ message: "User not found" });
+
+      sess.userName = updated.name;
+      res.json({
+        id: updated._id.toString(),
+        name: updated.name,
+        email: updated.email,
+        phone: updated.phone,
+        address: updated.address,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.get(api.orders.list.path, async (req, res) => {
     const userId = (req.session as any)?.userId;
     const orders = await storage.getOrders(userId);
