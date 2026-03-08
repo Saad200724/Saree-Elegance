@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { Loader2, Plus, Pencil, Trash2, Store, Upload, X, Image as ImageIcon, FileText } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Store, Upload, X, Image as ImageIcon, FileText, ChevronDown, ChevronUp, Package, Clock, CheckCircle2, Truck, User } from "lucide-react";
 import { openInvoice } from "@/lib/invoice";
 
 export default function Admin() {
@@ -25,6 +25,7 @@ export default function Admin() {
   const [primaryImageUrl, setPrimaryImageUrl] = useState("");
   const [secondaryImages, setSecondaryImages] = useState<string[]>([]);
   const [uploadingSecondary, setUploadingSecondary] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -460,65 +461,112 @@ export default function Admin() {
           </div>
           {ordersLoading ? (
             <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : !orders || orders.length === 0 ? (
+            <Card className="border-dashed border-2 bg-transparent">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <Package className="w-16 h-16 text-gray-200 mb-6" />
+                <h3 className="text-xl font-black italic tracking-tight text-gray-900 mb-2">No Orders Yet</h3>
+                <p className="text-gray-500 text-sm">Orders will appear here once customers place them.</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders?.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs">#{order.id}</TableCell>
-                      <TableCell>
-                        <div className="font-medium text-sm">{order.firstName} {order.lastName}</div>
-                        <div className="text-xs text-gray-500">{order.phone}</div>
-                        <div className="text-xs text-gray-400">{order.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-xs max-w-[200px]">
-                          <span className="font-semibold">{order.division}, {order.district}</span><br/>
-                          {order.upazila}<br/>
-                          <span className="text-gray-500">{order.address}</span>
+            <div className="space-y-4">
+              {orders?.map((order) => (
+                <Card key={order.id} className="overflow-hidden border-gray-100 shadow-sm hover:shadow-md transition-shadow" data-testid={`card-admin-order-${order.id}`}>
+                  <div
+                    className="flex flex-wrap justify-between items-center gap-4 px-6 py-4 cursor-pointer bg-white hover:bg-gray-50/50 transition-colors"
+                    onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                  >
+                    <div className="flex items-center gap-6 text-sm">
+                      <div>
+                        <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Order ID</p>
+                        <p className="font-mono font-bold text-gray-900">#{order.id}</p>
+                      </div>
+                      <div className="hidden sm:block h-8 w-px bg-gray-100" />
+                      <div className="hidden sm:block">
+                        <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Customer</p>
+                        <p className="font-medium text-gray-700">{order.firstName} {order.lastName}</p>
+                      </div>
+                      <div className="hidden md:block h-8 w-px bg-gray-100" />
+                      <div className="hidden md:block">
+                        <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Items</p>
+                        <p className="font-medium text-gray-700">{order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}</p>
+                      </div>
+                      <div className="hidden md:block h-8 w-px bg-gray-100" />
+                      <div className="hidden md:block">
+                        <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Date</p>
+                        <p className="font-medium text-gray-700">{order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <AdminStatusBadge status={order.status} />
+                      <p className="text-lg font-black text-gray-900">৳{Number(order.totalAmount).toLocaleString()}</p>
+                      {expandedOrder === order.id ? (
+                        <ChevronUp className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+
+                  {expandedOrder === order.id && (
+                    <CardContent className="border-t border-gray-100 py-6 bg-gray-50/30">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div>
+                          <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider mb-1">Customer</p>
+                          <p className="text-sm text-gray-700 font-medium">{order.firstName} {order.lastName}</p>
+                          <p className="text-xs text-gray-500">{order.phone}</p>
+                          <p className="text-xs text-gray-400">{order.email}</p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {order.items.map((item: any, idx: number) => (
-                            <div key={idx} className="text-xs flex justify-between gap-2">
-                              <span className="truncate max-w-[100px]">{item.product?.name}</span>
-                              <span className="text-gray-500">x{item.quantity}</span>
+                        <div>
+                          <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider mb-1">Shipping Address</p>
+                          <p className="text-sm text-gray-700 font-medium">{order.address}</p>
+                          {order.division && <p className="text-xs text-gray-500 mt-1">{order.division}, {order.district}, {order.upazila}</p>}
+                        </div>
+                        <div>
+                          <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider mb-1">Payment</p>
+                          <p className="text-sm text-gray-700 font-medium">{(order as any).paymentMethod || 'Cash on Delivery'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider mb-1">Order Status</p>
+                          <AdminOrderTimeline status={order.status} />
+                        </div>
+                      </div>
+
+                      <div className="mb-6">
+                        <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider mb-3">Items Ordered</p>
+                        <div className="space-y-3">
+                          {order.items?.map((item: any, idx: number) => (
+                            <div key={idx} className="flex items-center gap-4 bg-white rounded-xl p-3 border border-gray-100">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
+                                {item.product?.imageUrl ? (
+                                  <img src={item.product.imageUrl} alt={item.product?.name} className="w-full h-full object-cover" />
+                                ) : item.imageUrl ? (
+                                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Package className="w-6 h-6 text-gray-300" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-gray-900 text-sm truncate">{item.product?.name || item.name || 'Product'}</h4>
+                                <p className="text-xs text-gray-500">Qty: {item.quantity} x ৳{Number(item.price).toLocaleString()}</p>
+                              </div>
+                              <p className="font-bold text-gray-900 text-sm">৳{(item.quantity * Number(item.price)).toLocaleString()}</p>
                             </div>
                           ))}
                         </div>
-                      </TableCell>
-                      <TableCell className="font-bold text-sm text-[#3A5A1F]">৳{Number(order.totalAmount).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className="capitalize text-[10px] px-2 py-0"
-                          variant={
-                            order.status === "delivered" ? "default" :
-                            order.status === "pending" ? "destructive" : "secondary"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <p className="text-gray-400 uppercase text-[10px] font-bold tracking-wider">Update Status</p>
                           <Select
                             defaultValue={order.status}
                             onValueChange={(val) => statusMutation.mutate({ id: order.id, status: val })}
                           >
-                            <SelectTrigger className="w-[110px] h-8 text-[10px]">
+                            <SelectTrigger className="w-[130px] h-9 text-xs font-medium" data-testid={`select-status-${order.id}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -528,26 +576,61 @@ export default function Admin() {
                               <SelectItem value="delivered">Delivered</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openInvoice(order)}
-                            data-testid={`button-admin-invoice-${order.id}`}
-                            title="View Invoice"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); openInvoice(order); }}
+                          data-testid={`button-admin-invoice-${order.id}`}
+                          className="text-xs font-bold gap-2"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          View Invoice
+                        </Button>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function AdminStatusBadge({ status }: { status: string }) {
+  const configs: Record<string, { color: string; icon: any }> = {
+    pending: { color: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
+    processing: { color: "bg-blue-50 text-blue-700 border-blue-200", icon: Package },
+    shipped: { color: "bg-purple-50 text-purple-700 border-purple-200", icon: Truck },
+    delivered: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
+  };
+  const config = configs[status] || configs.pending;
+  const Icon = config.icon;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${config.color}`}>
+      <Icon className="w-3 h-3" />
+      {status}
+    </span>
+  );
+}
+
+function AdminOrderTimeline({ status }: { status: string }) {
+  const steps = ['pending', 'processing', 'shipped', 'delivered'];
+  const currentIndex = steps.indexOf(status);
+  return (
+    <div className="flex items-center gap-1 mt-1">
+      {steps.map((step, idx) => (
+        <div key={step} className="flex items-center gap-1">
+          <div className={`w-2 h-2 rounded-full ${idx <= currentIndex ? 'bg-emerald-500' : 'bg-gray-200'}`} />
+          {idx < steps.length - 1 && (
+            <div className={`w-4 h-0.5 ${idx < currentIndex ? 'bg-emerald-500' : 'bg-gray-200'}`} />
+          )}
+        </div>
+      ))}
+      <span className="text-xs text-gray-500 ml-2 capitalize">{status}</span>
     </div>
   );
 }
