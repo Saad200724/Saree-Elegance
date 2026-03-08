@@ -54,7 +54,7 @@ export default function Shop() {
           <div className="flex flex-col items-center text-center space-y-4">
             <h2 className="text-[10px] font-bold uppercase tracking-[0.6em] text-primary">The Collection</h2>
             <div className="flex items-center gap-8">
-              {["all", "Saree", "Lehenga", "Three Piece", "Party Dress", "Pakistani Dress"].map((cat) => (
+              {["all", "Saree", "Lehenga", "Pakistani Dress"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
@@ -83,7 +83,7 @@ export default function Shop() {
 
         {/* Product Grid - Editorial Spacing */}
         {isLoading ? (
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16">
+           <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
               {[1,2,3,4,5,6].map(i => (
                 <div key={i} className="aspect-[3/4] bg-gray-50 animate-pulse" />
               ))}
@@ -93,7 +93,7 @@ export default function Shop() {
             <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-gray-300">No pieces found in this curation</h3>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
             {products?.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
